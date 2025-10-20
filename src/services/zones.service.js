@@ -27,7 +27,7 @@ const getDeskOccupancy = async (filters = {}) => {
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
       AND class_type = 'entered_zone'
-      AND label = 'person'
+      AND data->>'label' = 'person'
       AND data->'zones' IS NOT NULL
     `;
     const params = [startTime, endTime];
@@ -186,7 +186,7 @@ const getZoneUtilization = async (filters = {}) => {
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
-      AND label = 'person'
+      AND data->>'label' = 'person'
       AND data->'zones' IS NOT NULL
     `;
     const params = [startTime, endTime];
@@ -313,7 +313,7 @@ const getEmployeeZonePreferences = async (filters = {}) => {
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
-      AND label = 'person'
+      AND data->>'label' = 'person'
       AND data->'zones' IS NOT NULL
     `;
     const params = [startTime, endTime];
@@ -450,7 +450,7 @@ const getZoneActivityPatterns = async (filters = {}) => {
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
-      AND label = 'person'
+      AND data->>'label' = 'person'
       AND data->'zones' IS NOT NULL
     `;
     const params = [startTime, endTime];
@@ -472,14 +472,14 @@ const getZoneActivityPatterns = async (filters = {}) => {
       SELECT
         camera,
         data->'zones' as zones,
-        EXTRACT(HOUR FROM FROM_UNIXTIME(timestamp)) as hour_of_day,
-        EXTRACT(DOW FROM FROM_UNIXTIME(timestamp)) as day_of_week,
+        EXTRACT(HOUR FROM to_timestamp(timestamp)) as hour_of_day,
+        EXTRACT(DOW FROM to_timestamp(timestamp)) as day_of_week,
         COUNT(*) as activity_count
       FROM timeline
       ${whereClause}
       GROUP BY camera, data->'zones', 
-               EXTRACT(HOUR FROM FROM_UNIXTIME(timestamp)), 
-               EXTRACT(DOW FROM FROM_UNIXTIME(timestamp))
+               EXTRACT(HOUR FROM to_timestamp(timestamp)), 
+               EXTRACT(DOW FROM to_timestamp(timestamp))
       ORDER BY camera, data->'zones', hour_of_day, day_of_week
     `;
 

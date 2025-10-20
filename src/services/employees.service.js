@@ -27,7 +27,7 @@ const getEmployeeWorkHours = async (filters = {}) => {
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
       AND class_type = 'entered_zone'
-      AND label = 'person'
+      AND data->>'label' = 'person'
     `;
     const params = [startTime, endTime];
     let paramIndex = 3;
@@ -52,7 +52,7 @@ const getEmployeeWorkHours = async (filters = {}) => {
         MIN(timestamp) as first_seen,
         MAX(timestamp) as last_seen,
         COUNT(*) as activity_count,
-        EXTRACT(EPOCH FROM (MAX(timestamp) - MIN(timestamp))) / 3600 as total_hours
+        (MAX(timestamp) - MIN(timestamp)) / 3600 as total_hours
       FROM timeline
       ${whereClause}
       GROUP BY data->'sub_label'->>0, camera, data->'zones'
@@ -151,7 +151,7 @@ const getEmployeeBreakTime = async (filters = {}) => {
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
       AND class_type = 'left_zone'
-      AND label = 'person'
+      AND data->>'label' = 'person'
     `;
     const params = [startTime, endTime];
     let paramIndex = 3;
@@ -257,7 +257,7 @@ const getEmployeeAttendance = async (filters = {}) => {
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
       AND class_type = 'entered_zone'
-      AND label = 'person'
+      AND data->>'label' = 'person'
     `;
     const params = [startTime, endTime];
     let paramIndex = 3;
@@ -271,14 +271,14 @@ const getEmployeeAttendance = async (filters = {}) => {
     const sql = `
       SELECT
         data->'sub_label'->>0 as employee_name,
-        DATE(FROM_UNIXTIME(timestamp)) as attendance_date,
+        DATE(to_timestamp(timestamp)) as attendance_date,
         MIN(timestamp) as first_seen,
         MAX(timestamp) as last_seen,
         COUNT(*) as activity_count,
-        EXTRACT(EPOCH FROM (MAX(timestamp) - MIN(timestamp))) / 3600 as work_hours
+        (MAX(timestamp) - MIN(timestamp)) / 3600 as work_hours
       FROM timeline
       ${whereClause}
-      GROUP BY data->'sub_label'->>0, DATE(FROM_UNIXTIME(timestamp))
+      GROUP BY data->'sub_label'->>0, DATE(to_timestamp(timestamp))
       ORDER BY attendance_date DESC, data->'sub_label'->>0
     `;
 
@@ -358,7 +358,7 @@ const getEmployeeActivityPatterns = async (filters = {}) => {
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
-      AND label = 'person'
+      AND data->>'label' = 'person'
     `;
     const params = [startTime, endTime];
     let paramIndex = 3;
@@ -380,14 +380,14 @@ const getEmployeeActivityPatterns = async (filters = {}) => {
         data->'sub_label'->>0 as employee_name,
         camera,
         data->'zones' as zones,
-        EXTRACT(HOUR FROM FROM_UNIXTIME(timestamp)) as hour_of_day,
-        EXTRACT(DOW FROM FROM_UNIXTIME(timestamp)) as day_of_week,
+        EXTRACT(HOUR FROM to_timestamp(timestamp)) as hour_of_day,
+        EXTRACT(DOW FROM to_timestamp(timestamp)) as day_of_week,
         COUNT(*) as activity_count
       FROM timeline
       ${whereClause}
       GROUP BY data->'sub_label'->>0, camera, data->'zones', 
-               EXTRACT(HOUR FROM FROM_UNIXTIME(timestamp)), 
-               EXTRACT(DOW FROM FROM_UNIXTIME(timestamp))
+               EXTRACT(HOUR FROM to_timestamp(timestamp)), 
+               EXTRACT(DOW FROM to_timestamp(timestamp))
       ORDER BY data->'sub_label'->>0, hour_of_day, day_of_week
     `;
 

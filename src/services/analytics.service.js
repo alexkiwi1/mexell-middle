@@ -122,19 +122,19 @@ const getTrendAnalysis = async (filters = {}) => {
     
     switch (granularity) {
       case 'hourly':
-        timeGrouping = 'EXTRACT(HOUR FROM FROM_UNIXTIME(timestamp))';
+        timeGrouping = 'EXTRACT(HOUR FROM to_timestamp(timestamp))';
         timeFormat = 'HH24';
         break;
       case 'daily':
-        timeGrouping = 'DATE(FROM_UNIXTIME(timestamp))';
+        timeGrouping = 'DATE(to_timestamp(timestamp))';
         timeFormat = 'YYYY-MM-DD';
         break;
       case 'weekly':
-        timeGrouping = 'EXTRACT(WEEK FROM FROM_UNIXTIME(timestamp))';
+        timeGrouping = 'EXTRACT(WEEK FROM to_timestamp(timestamp))';
         timeFormat = 'YYYY-"W"WW';
         break;
       default:
-        timeGrouping = 'EXTRACT(HOUR FROM FROM_UNIXTIME(timestamp))';
+        timeGrouping = 'EXTRACT(HOUR FROM to_timestamp(timestamp))';
         timeFormat = 'HH24';
     }
 
@@ -162,7 +162,7 @@ const getTrendAnalysis = async (filters = {}) => {
             COUNT(DISTINCT camera) as unique_cameras
           FROM timeline
           ${whereClause}
-          AND label = 'person'
+          AND data->>'label' = 'person'
           GROUP BY ${timeGrouping}
           ORDER BY time_period
         `;
@@ -176,7 +176,7 @@ const getTrendAnalysis = async (filters = {}) => {
             COUNT(DISTINCT camera) as unique_cameras
           FROM timeline
           ${whereClause}
-          AND label = 'cell phone'
+          AND data->>'label' = 'cell phone'
           GROUP BY ${timeGrouping}
           ORDER BY time_period
         `;
@@ -189,7 +189,7 @@ const getTrendAnalysis = async (filters = {}) => {
             COUNT(*) as total_activity
           FROM timeline
           ${whereClause}
-          AND label = 'person'
+          AND data->>'label' = 'person'
           AND data->'sub_label'->>0 IS NOT NULL
           GROUP BY ${timeGrouping}
           ORDER BY time_period
@@ -410,7 +410,7 @@ const getCustomReport = async (filters = {}) => {
 const getActivitySummary = async (startTime, endTime, camera) => {
   let whereClause = `
     WHERE timestamp >= $1 AND timestamp <= $2
-    AND label = 'person'
+    AND data->>'label' = 'person'
   `;
   const params = [startTime, endTime];
   let paramIndex = 3;
@@ -441,7 +441,7 @@ const getActivitySummary = async (startTime, endTime, camera) => {
 const getViolationSummary = async (startTime, endTime, camera) => {
   let whereClause = `
     WHERE timestamp >= $1 AND timestamp <= $2
-    AND label = 'cell phone'
+    AND data->>'label' = 'cell phone'
   `;
   const params = [startTime, endTime];
   let paramIndex = 3;
@@ -477,7 +477,7 @@ const getViolationSummary = async (startTime, endTime, camera) => {
 const getEmployeeSummary = async (startTime, endTime, camera) => {
   let whereClause = `
     WHERE timestamp >= $1 AND timestamp <= $2
-    AND label = 'person'
+    AND data->>'label' = 'person'
     AND data->'sub_label'->>0 IS NOT NULL
   `;
   const params = [startTime, endTime];
