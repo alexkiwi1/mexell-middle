@@ -1,0 +1,392 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-20T02:09:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2025.10.0",
+  "resources": [
+    {
+      "_id": "wrk_frigate_api",
+      "parentId": null,
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Frigate Middleware API",
+      "description": "Complete Frigate API collection with employee violation assignment",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_main",
+      "parentId": "wrk_frigate_api",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Main Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002"
+      },
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_basic",
+      "parentId": "wrk_frigate_api",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Basic APIs",
+      "description": "Health, cameras, and media endpoints",
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_monitoring",
+      "parentId": "wrk_frigate_api",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Camera Monitoring",
+      "description": "Advanced camera monitoring with date/time support",
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_violations",
+      "parentId": "wrk_frigate_api",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Employee Violations",
+      "description": "Cell phone violation tracking with employee assignment",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_health",
+      "parentId": "fld_basic",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Health Check",
+      "description": "Check API health and database connectivity",
+      "url": "{{ _.base_url }}/v1/health",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_health",
+          "name": "Health Check Test",
+          "script": "const response = await insomnia.send();\nif (response.status === 200) {\n  const data = response.json;\n  expect(data.success).toBe(true);\n  expect(data.data.database.postgresql).toBe('Connected');\n  console.log('✅ Health check passed - All services healthy');\n} else {\n  throw new Error(`Health check failed: ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_cameras",
+      "parentId": "fld_basic",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "List All Cameras",
+      "description": "Get list of all available cameras",
+      "url": "{{ _.base_url }}/v1/api/cameras/list",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_cameras",
+          "name": "Cameras List Test",
+          "script": "const response = await insomnia.send();\nif (response.status === 200) {\n  const data = response.json;\n  expect(data.success).toBe(true);\n  expect(Array.isArray(data.data.cameras)).toBe(true);\n  expect(data.data.count).toBeGreaterThan(0);\n  console.log(`✅ Found ${data.data.cameras.length} cameras`);\n} else {\n  throw new Error(`Cameras list failed: ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_media_clips",
+      "parentId": "fld_basic",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Recent Media Clips",
+      "description": "Get recent media clips with thumbnails",
+      "url": "{{ _.base_url }}/v1/api/recent-media/clips",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "camera",
+          "value": "employees_01",
+          "description": "Camera filter",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum clips",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_media_clips",
+          "name": "Media Clips Test",
+          "script": "const response = await insomnia.send();\nif (response.status === 200) {\n  const data = response.json;\n  expect(data.success).toBe(true);\n  expect(Array.isArray(data.data.clips)).toBe(true);\n  console.log(`✅ Found ${data.data.clips.length} media clips`);\n} else {\n  throw new Error(`Media clips failed: ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_violations_24h",
+      "parentId": "fld_monitoring",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Camera Violations (Last 24h)",
+      "description": "Get camera violations for the last 24 hours with employee assignment",
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/violations",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "10",
+          "description": "Maximum violations",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_violations_24h",
+          "name": "Camera Violations 24h Test",
+          "script": "const response = await insomnia.send();\nif (response.status === 200) {\n  const data = response.json;\n  expect(data.success).toBe(true);\n  expect(Array.isArray(data.data.violations)).toBe(true);\n  expect(data.data.filters.hours).toBe(24);\n  console.log(`✅ Found ${data.data.violations.length} violations in last 24h`);\n  if (data.data.violations.length > 0) {\n    const violation = data.data.violations[0];\n    expect(violation.assignedEmployee).toBeDefined();\n    expect(violation.assignmentMethod).toBeDefined();\n    console.log(`✅ Employee assignment working: ${violation.assignedEmployee} (${violation.assignmentMethod})`);\n  }\n} else {\n  throw new Error(`Camera violations 24h failed: ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_violations_date",
+      "parentId": "fld_monitoring",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Camera Violations (Date Range)",
+      "description": "Get camera violations for a specific date range with employee assignment",
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/violations",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-06",
+          "description": "Start date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-06",
+          "description": "End date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum violations",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_violations_date",
+          "name": "Camera Violations Date Test",
+          "script": "const response = await insomnia.send();\nif (response.status === 200) {\n  const data = response.json;\n  expect(data.success).toBe(true);\n  expect(data.data.filters.start_date).toBe('2025-10-06');\n  expect(data.data.filters.end_date).toBe('2025-10-06');\n  console.log(`✅ Found ${data.data.violations.length} violations for date range`);\n} else {\n  throw new Error(`Camera violations date failed: ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_violations_summary",
+      "parentId": "fld_violations",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Violations Summary by Employee",
+      "description": "Get summary of all violations grouped by employee",
+      "url": "{{ _.base_url }}/v1/api/violations/summary",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-06",
+          "description": "Start date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-06",
+          "description": "End date (YYYY-MM-DD)",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_violations_summary",
+          "name": "Violations Summary Test",
+          "script": "const response = await insomnia.send();\nif (response.status === 200) {\n  const data = response.json;\n  expect(data.success).toBe(true);\n  expect(Array.isArray(data.data.summary)).toBe(true);\n  expect(data.data.count).toBeGreaterThan(0);\n  console.log(`✅ Found ${data.data.summary.length} employees with violations`);\n  \n  // Check if we have employee assignments\n  const withAssignments = data.data.summary.filter(emp => emp.employeeName !== 'Unknown');\n  console.log(`✅ ${withAssignments.length} employees have desk zone assignments`);\n  \n  if (withAssignments.length > 0) {\n    const topViolator = withAssignments[0];\n    console.log(`✅ Top violator: ${topViolator.employeeName} with ${topViolator.totalViolations} violations`);\n  }\n} else {\n  throw new Error(`Violations summary failed: ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_violations_employee",
+      "parentId": "fld_violations",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Violations for Specific Employee",
+      "description": "Get violations for a specific employee",
+      "url": "{{ _.base_url }}/v1/api/violations/employee/Muhammad%20Taha",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-06",
+          "description": "Start date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-06",
+          "description": "End date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "10",
+          "description": "Maximum violations",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_violations_employee",
+          "name": "Employee Violations Test",
+          "script": "const response = await insomnia.send();\nif (response.status === 200) {\n  const data = response.json;\n  expect(data.success).toBe(true);\n  expect(data.data.employee).toBe('Muhammad Taha');\n  expect(Array.isArray(data.data.violations)).toBe(true);\n  console.log(`✅ Found ${data.data.violations.length} violations for Muhammad Taha`);\n  \n  if (data.data.violations.length > 0) {\n    const violation = data.data.violations[0];\n    expect(violation.assignedEmployee).toBe('Muhammad Taha');\n    expect(violation.assignmentMethod).toBe('desk_zone');\n    expect(violation.zones).toContain('desk_11');\n    console.log(`✅ Employee assignment verified: ${violation.assignmentMethod}`);\n    console.log(`✅ Desk zones: ${violation.zones.join(', ')}`);\n  }\n} else {\n  throw new Error(`Employee violations failed: ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_violations_employee_safia",
+      "parentId": "fld_violations",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Violations for Safia Imtiaz",
+      "description": "Get violations for Safia Imtiaz (desk_01)",
+      "url": "{{ _.base_url }}/v1/api/violations/employee/Safia%20Imtiaz",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-06",
+          "description": "Start date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-06",
+          "description": "End date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum violations",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_violations_safia",
+          "name": "Safia Violations Test",
+          "script": "const response = await insomnia.send();\nif (response.status === 200) {\n  const data = response.json;\n  expect(data.success).toBe(true);\n  expect(data.data.employee).toBe('Safia Imtiaz');\n  console.log(`✅ Found ${data.data.violations.length} violations for Safia Imtiaz`);\n  \n  if (data.data.violations.length > 0) {\n    const violation = data.data.violations[0];\n    expect(violation.assignedEmployee).toBe('Safia Imtiaz');\n    expect(violation.assignmentMethod).toBe('desk_zone');\n    expect(violation.zones).toContain('desk_01');\n    console.log(`✅ Safia's desk assignment verified: desk_01`);\n  }\n} else {\n  throw new Error(`Safia violations failed: ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    }
+  ]
+}

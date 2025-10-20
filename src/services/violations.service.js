@@ -1,0 +1,665 @@
+const { query } = require('../config/postgres');
+const { unixToISO, unixToReadable, parseDateTimeRange } = require('./frigate.service');
+const config = require('../config/config');
+const logger = require('../config/logger');
+const fetch = require('node-fetch');
+
+// Cache for file listings to avoid repeated HTTP requests
+const fileCache = {
+  clips: new Map(),
+  recordings: new Map(),
+  lastUpdated: {
+    clips: 0,
+    recordings: 0
+  },
+  cacheTimeout: 5 * 60 * 1000 // 5 minutes
+};
+
+/**
+ * Configuration for violation assignment strategies
+ */
+const ASSIGNMENT_CONFIG = {
+  // Enable smart assignment with fallbacks
+  enableSmartAssignment: true,
+  
+  // Enable camera-based fallback when no zones detected
+  enableCameraFallback: true,
+  
+  // Enable recent activity analysis
+  enableRecentActivity: true,
+  
+  // Number of recent violations to analyze for activity patterns
+  recentActivityWindow: 10,
+  
+  // Minimum confidence level to show assignment
+  minConfidenceLevel: 'low' // 'high', 'medium', 'low', 'none'
+};
+
+/**
+ * Generate fast media URLs based on Frigate patterns (no HTTP requests)
+ * @param {string} camera - Camera name
+ * @param {number} timestamp - Unix timestamp
+ * @param {string} violationId - Violation ID from database
+ * @returns {Object} Fast media URLs
+ */
+const generateFastMediaUrls = (camera, timestamp, violationId) => {
+  const videoServerUrl = config.frigate.videoServerUrl;
+  const clipsUrl = `${videoServerUrl}/clips/`;
+  
+  // Convert timestamp to date for folder structure
+  const date = new Date(timestamp * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = date.getMinutes();
+  const second = date.getSeconds();
+  
+  // Generate URLs based on Frigate patterns
+  const snapshotUrl = `${videoServerUrl}/clips/${camera}-${timestamp}-${violationId}.jpg`;
+  const cleanSnapshotUrl = `${videoServerUrl}/clips/${camera}-${timestamp}-${violationId}-clean.png`;
+  const thumbnailUrl = `${videoServerUrl}/clips/review/thumb-${camera}-${timestamp}-${violationId}.webp`;
+  
+  // Recording URLs
+  const recordingUrl = `${videoServerUrl}/recordings/${year}-${month}-${day}/${hour}/${camera}/`;
+  const videoMinute = String(minute).padStart(2, '0');
+  const videoSecond = String(second).padStart(2, '0');
+  const videoFileName = `${videoMinute}.${videoSecond}.mp4`;
+  const videoFileUrl = `${recordingUrl}${videoFileName}`;
+  
+  return {
+    video_server_url: videoServerUrl,
+    clips_url: clipsUrl,
+    recordings_url: `${videoServerUrl}/recordings/`,
+    recording_url: recordingUrl,
+    video_file_url: videoFileUrl,
+    preview_url: `${videoServerUrl}/clips/previews/${camera}/`,
+    
+    // Snapshot URLs (may not exist due to ID mismatch)
+    snapshot_url: snapshotUrl,
+    clean_snapshot_url: cleanSnapshotUrl,
+    thumbnail_url: thumbnailUrl,
+    
+    // Metadata
+    timestamp: timestamp,
+    camera: camera,
+    violation_id: violationId,
+    date_folder: `${year}-${month}-${day}`,
+    hour_folder: hour,
+    video_filename: videoFileName,
+    
+    // Notes
+    note: "URLs generated based on Frigate patterns. Some may not exist due to ID mismatches. Use clips_url to browse available files.",
+    warning: "These URLs are generated patterns and may not exist. Check clips_url for actual available files."
+  };
+};
+
+/**
+ * Generate media URLs for violations (fast, no HTTP requests)
+ * @param {Object} violation - Violation data from database
+ * @returns {Object} Media URLs
+ */
+const generateMediaUrls = (violation) => {
+  const timestamp = violation.timestamp;
+  const camera = violation.camera;
+  const violationId = violation.id || 'unknown';
+  
+  return generateFastMediaUrls(camera, timestamp, violationId);
+};
+
+/**
+ * Get media URLs for a specific violation ID
+ * @param {string} violationId - Violation ID from timeline
+ * @param {string} camera - Camera name
+ * @param {number} timestamp - Unix timestamp
+ * @returns {Object} Media URLs
+ */
+const getViolationMediaUrls = (violationId, camera, timestamp) => {
+  const videoServerUrl = config.frigate.videoServerUrl;
+  
+  // Convert timestamp to date for folder structure
+  const date = new Date(timestamp * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  
+  return {
+    snapshot_url: `${videoServerUrl}/clips/${camera}-${timestamp}-${violationId}.jpg`,
+    clean_snapshot_url: `${videoServerUrl}/clips/${camera}-${timestamp}-${violationId}-clean.png`,
+    thumbnail_url: `${videoServerUrl}/clips/review/thumb-${camera}-${timestamp}-${violationId}.webp`,
+    recording_url: `${videoServerUrl}/recordings/${year}-${month}-${day}/${hour}/${camera}/`,
+    preview_url: `${videoServerUrl}/clips/previews/${camera}/`,
+    video_server_url: videoServerUrl,
+    // Additional metadata
+    timestamp: timestamp,
+    camera: camera,
+    violation_id: violationId,
+    date_folder: `${year}-${month}-${day}`,
+    hour_folder: hour
+  };
+};
+
+/**
+ * Desk to Employee Mapping
+ * Maps desk zones to specific employees
+ */
+const DESK_EMPLOYEE_MAPPING = {
+  // employees_01 camera desks
+  "desk_01": "Safia Imtiaz",
+  "desk_02": "Kinza Amin", 
+  "desk_03": "Aiman Jawaid",
+  "desk_04": "Nimra Ghulam Fareed",
+  "desk_05": "Summaiya Khan",
+  "desk_06": "Arifa Dhari",
+  "desk_07": "Khalid Ahmed",
+  "desk_08": "Vacant",
+  "desk_09": "Muhammad Arsalan",
+  "desk_10": "Saadullah Khoso",
+  "desk_11": "Muhammad Taha",
+  "desk_12": "Muhammad Awais",
+  
+  // employees_02 camera desks
+  "desk_13": "Nabeel Bhatti",
+  "desk_14": "Abdul Qayoom",
+  "desk_15": "Sharjeel Abbas",
+  "desk_16": "Saad Bin Salman",
+  "desk_17": "Sufiyan Ahmed",
+  "desk_18": "Muhammad Qasim",
+  "desk_19": "Sameer Panhwar",
+  "desk_20": "Bilal Soomro",
+  "desk_21": "Saqlain Murtaza",
+  "desk_22": "Syed Hussain Ali Kazi",
+  "desk_23": "Saad Khan",
+  "desk_24": "Kabeer Rajput",
+  
+  // employees_03 camera desks
+  "desk_25": "Mehmood Memon",
+  "desk_26": "Ali Habib",
+  "desk_27": "Bhamar Lal",
+  "desk_28": "Atban Bin Aslam",
+  "desk_29": "Sadique Khowaja",
+  "desk_30": "Syed Awwab",
+  "desk_31": "Samad Siyal",
+  "desk_32": "Wasi Khan",
+  "desk_33": "Kashif Raza",
+  "desk_34": "Wajahat Imam",
+  "desk_35": "Bilal Ahmed",
+  "desk_36": "Muhammad Usman",
+  "desk_37": "Arsalan Khan",
+  "desk_38": "Abdul Kabeer",
+  "desk_39": "Gian Chand",
+  "desk_40": "Ayan Arain",
+  
+  // employees_04 camera desks
+  "desk_41": "Zaib Ali Mughal",
+  "desk_42": "Abdul Wassay",
+  "desk_43": "Aashir Ali",
+  "desk_44": "Ali Raza",
+  "desk_45": "Muhammad Tabish",
+  "desk_46": "Farhan Ali",
+  "desk_47": "Tahir Ahmed",
+  "desk_48": "Zain Nawaz",
+  "desk_49": "Ali Memon",
+  "desk_50": "Muhammad Wasif Samoon",
+  "desk_51": "Vacant",
+  "desk_52": "Sumair Hussain",
+  "desk_53": "Natasha Batool",
+  "desk_54": "Vacant",
+  "desk_55": "Preet Nuckrich",
+  "desk_56": "Vacant",
+  
+  // employees_05 camera desks
+  "desk_57": "Vacant",
+  "desk_58": "Konain Mustafa",
+  "desk_59": "Muhammad Uzair",
+  "desk_60": "Vacant",
+  
+  // employees_06 camera desks
+  "desk_61": "Hira Memon",
+  "desk_62": "Muhammad Roshan",
+  "desk_63": "Syed Safwan Ali Hashmi",
+  "desk_64": "Arbaz",
+  "desk_65": "Muhammad Shakir",
+  "desk_66": "Muneeb Intern"
+};
+
+/**
+ * Get employee name from desk zone
+ * @param {Array} zones - Array of zones from violation data
+ * @returns {string|null} Employee name or null if no desk zone found
+ */
+const getEmployeeFromDeskZone = (zones) => {
+  if (!zones || !Array.isArray(zones)) {
+    return null;
+  }
+  
+  // Look for desk zones in the zones array
+  for (const zone of zones) {
+    if (zone.startsWith('desk_') && DESK_EMPLOYEE_MAPPING[zone]) {
+      return DESK_EMPLOYEE_MAPPING[zone];
+    }
+  }
+  
+  return null;
+};
+
+/**
+ * Get camera-specific employee assignments for fallback
+ * Maps cameras to their primary employees for better assignment
+ */
+const CAMERA_EMPLOYEE_FALLBACK = {
+  "employees_01": [
+    "Safia Imtiaz", "Kinza Amin", "Aiman Jawaid", "Nimra Ghulam Fareed", 
+    "Summaiya Khan", "Arifa Dhari", "Khalid Ahmed", "Muhammad Arsalan", 
+    "Saadullah Khoso", "Muhammad Taha", "Muhammad Awais"
+  ],
+  "employees_02": [
+    "Nabeel Bhatti", "Abdul Qayoom", "Sharjeel Abbas", "Saad Bin Salman",
+    "Sufiyan Ahmed", "Muhammad Qasim", "Sameer Panhwar", "Bilal Soomro",
+    "Saqlain Murtaza", "Syed Hussain Ali Kazi", "Saad Khan", "Kabeer Rajput"
+  ],
+  "employees_03": [
+    "Mehmood Memon", "Ali Habib", "Bhamar Lal", "Atban Bin Aslam",
+    "Sadique Khowaja", "Syed Awwab", "Samad Siyal", "Wasi Khan",
+    "Kashif Raza", "Wajahat Imam", "Bilal Ahmed", "Muhammad Usman",
+    "Arsalan Khan", "Abdul Kabeer", "Gian Chand", "Ayan Arain"
+  ],
+  "employees_04": [
+    "Zaib Ali Mughal", "Abdul Wassay", "Aashir Ali", "Ali Raza",
+    "Muhammad Tabish", "Farhan Ali", "Tahir Ahmed", "Zain Nawaz",
+    "Ali Memon", "Muhammad Wasif Samoon", "Sumair Hussain", "Natasha Batool",
+    "Preet Nuckrich"
+  ],
+  "employees_05": [
+    "Konain Mustafa", "Muhammad Uzair"
+  ],
+  "employees_06": [
+    "Hira Memon", "Muhammad Roshan", "Syed Safwan Ali Hashmi", "Arbaz",
+    "Muhammad Shakir", "Muneeb Intern"
+  ],
+  "employees_07": [
+    // Add employees for employees_07 if known
+  ],
+  "employees_08": [
+    // Add employees for employees_08 if known
+  ]
+};
+
+/**
+ * Get fallback employee assignment based on camera and recent activity
+ * @param {string} camera - Camera name
+ * @param {Array} recentViolations - Recent violations for context
+ * @returns {string|null} Employee name or null
+ */
+const getFallbackEmployeeAssignment = (camera, recentViolations = []) => {
+  // First, try to find employees who were recently active in this camera
+  const recentEmployees = recentViolations
+    .filter(v => v.camera === camera && v.assignedEmployee !== 'Unknown')
+    .map(v => v.assignedEmployee);
+  
+  if (recentEmployees.length > 0) {
+    // Count frequency of recent employees and return the most frequent
+    const employeeCounts = {};
+    recentEmployees.forEach(emp => {
+      employeeCounts[emp] = (employeeCounts[emp] || 0) + 1;
+    });
+    
+    // Return the most frequently active employee
+    const mostActiveEmployee = Object.keys(employeeCounts).reduce((a, b) => 
+      employeeCounts[a] > employeeCounts[b] ? a : b
+    );
+    
+    return mostActiveEmployee;
+  }
+  
+  // Fallback to camera-specific employee list
+  const cameraEmployees = CAMERA_EMPLOYEE_FALLBACK[camera];
+  if (cameraEmployees && cameraEmployees.length > 0) {
+    // Return a random employee from the camera's employee list
+    // This provides some variety instead of always the same person
+    const randomIndex = Math.floor(Math.random() * cameraEmployees.length);
+    return cameraEmployees[randomIndex];
+  }
+  
+  return null;
+};
+
+/**
+ * Get intelligent camera-based assignment using multiple strategies
+ * @param {Object} violation - Violation data
+ * @param {Array} cameraEmployees - List of employees for this camera
+ * @param {Array} allViolations - All violations for context
+ * @returns {Object} Assignment result
+ */
+const getIntelligentCameraAssignment = (violation, cameraEmployees, allViolations) => {
+  const camera = violation.camera;
+  
+  // Strategy 1: Check if any employee from this camera was recently active
+  const recentViolations = allViolations
+    .filter(v => v.camera === camera && v.timestamp < violation.timestamp)
+    .slice(-20); // Last 20 violations in same camera
+  
+  const recentEmployees = recentViolations
+    .filter(v => v.assignedEmployee && v.assignedEmployee !== 'Unknown')
+    .map(v => v.assignedEmployee);
+  
+  if (recentEmployees.length > 0) {
+    // Find most frequently active employee from this camera
+    const employeeCounts = {};
+    recentEmployees.forEach(emp => {
+      if (cameraEmployees.includes(emp)) {
+        employeeCounts[emp] = (employeeCounts[emp] || 0) + 1;
+      }
+    });
+    
+    if (Object.keys(employeeCounts).length > 0) {
+      const mostActiveEmployee = Object.keys(employeeCounts).reduce((a, b) => 
+        employeeCounts[a] > employeeCounts[b] ? a : b
+      );
+      
+      return {
+        employee: mostActiveEmployee,
+        reason: `Most active employee in ${camera} recently (${employeeCounts[mostActiveEmployee]} recent violations)`
+      };
+    }
+  }
+  
+  // Strategy 2: Time-based rotation (distribute violations across employees)
+  const timeBasedIndex = Math.floor(violation.timestamp / 3600) % cameraEmployees.length; // Change every hour
+  const timeBasedEmployee = cameraEmployees[timeBasedIndex];
+  
+  return {
+    employee: timeBasedEmployee,
+    reason: `Time-based rotation for ${camera} (hourly distribution)`
+  };
+};
+
+/**
+ * Get smart employee assignment with multiple fallback strategies
+ * @param {Object} violation - Violation data
+ * @param {Array} allViolations - All violations for context
+ * @returns {Object} Assignment result
+ */
+const getSmartEmployeeAssignment = (violation, allViolations) => {
+  const zones = violation.zones || [];
+  const faceEmployeeName = violation.face_employee_name;
+  const deskEmployeeName = getEmployeeFromDeskZone(zones);
+  
+  // Priority 1: Face recognition
+  if (faceEmployeeName) {
+    return {
+      assignedEmployee: faceEmployeeName,
+      assignmentMethod: 'face_recognition',
+      confidence: 'high'
+    };
+  }
+  
+  // Priority 2: Desk zone assignment
+  if (deskEmployeeName && deskEmployeeName !== 'Vacant') {
+    return {
+      assignedEmployee: deskEmployeeName,
+      assignmentMethod: 'desk_zone',
+      confidence: 'high'
+    };
+  }
+  
+  // Priority 3: Recent activity in same camera
+  const recentViolations = allViolations
+    .filter(v => v.camera === violation.camera && v.timestamp < violation.timestamp)
+    .slice(-ASSIGNMENT_CONFIG.recentActivityWindow);
+  
+  const recentEmployees = recentViolations
+    .filter(v => v.assignedEmployee && v.assignedEmployee !== 'Unknown')
+    .map(v => v.assignedEmployee);
+  
+  if (recentEmployees.length > 0) {
+    // Find most frequent recent employee
+    const employeeCounts = {};
+    recentEmployees.forEach(emp => {
+      employeeCounts[emp] = (employeeCounts[emp] || 0) + 1;
+    });
+    
+    const mostActiveEmployee = Object.keys(employeeCounts).reduce((a, b) => 
+      employeeCounts[a] > employeeCounts[b] ? a : b
+    );
+    
+    return {
+      assignedEmployee: mostActiveEmployee,
+      assignmentMethod: 'recent_activity',
+      confidence: 'medium'
+    };
+  }
+  
+  // Priority 4: Camera-based fallback
+  const cameraEmployees = CAMERA_EMPLOYEE_FALLBACK[violation.camera];
+  if (cameraEmployees && cameraEmployees.length > 0) {
+    // Use a more intelligent assignment strategy
+    const assignment = getIntelligentCameraAssignment(violation, cameraEmployees, allViolations);
+    return {
+      assignedEmployee: assignment.employee,
+      assignmentMethod: 'camera_fallback',
+      confidence: 'low',
+      assignmentReason: assignment.reason
+    };
+  }
+  
+  // Priority 5: Unknown
+  return {
+    assignedEmployee: 'Unknown',
+    assignmentMethod: 'unknown',
+    confidence: 'none'
+  };
+};
+
+/**
+ * Get cell phone violations with employee assignment
+ * @param {Object} filters - Filter options
+ * @param {string} filters.camera - Camera name filter
+ * @param {number} filters.startTime - Start timestamp filter
+ * @param {number} filters.endTime - End timestamp filter
+ * @param {number} filters.limit - Limit number of results
+ * @returns {Promise<Array>} Violations with employee assignments
+ */
+const getCellPhoneViolations = async (filters = {}) => {
+  try {
+    let whereConditions = [];
+    let params = [];
+    let paramCount = 0;
+
+    if (filters.camera) {
+      paramCount++;
+      whereConditions.push(`camera = $${paramCount}`);
+      params.push(filters.camera);
+    }
+
+    if (filters.startTime) {
+      paramCount++;
+      whereConditions.push(`timestamp >= $${paramCount}`);
+      params.push(filters.startTime);
+    }
+
+    if (filters.endTime) {
+      paramCount++;
+      whereConditions.push(`timestamp <= $${paramCount}`);
+      params.push(filters.endTime);
+    }
+
+    // Filter for cell phone detections
+    paramCount++;
+    whereConditions.push(`data->>'label' = $${paramCount}`);
+    params.push('cell phone');
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const limitClause = filters.limit ? `LIMIT ${filters.limit}` : 'LIMIT 100';
+
+    const sql = `
+      SELECT 
+        timestamp,
+        camera,
+        source_id,
+        data->'sub_label'->>0 as face_employee_name,
+        data->'zones' as zones,
+        data->'objects' as objects,
+        data->>'score' as confidence
+      FROM timeline
+      ${whereClause}
+      ORDER BY timestamp DESC
+      ${limitClause}
+    `;
+
+    const result = await query(sql, params);
+    
+    // Process violations and assign employees using smart assignment
+    const violations = result.map((violation, index) => {
+      const zones = violation.zones || [];
+      const faceEmployeeName = violation.face_employee_name;
+      const deskEmployeeName = getEmployeeFromDeskZone(zones);
+      const violationId = violation.source_id || 'unknown';
+      
+      // Use smart assignment with multiple fallback strategies
+      const assignment = getSmartEmployeeAssignment(violation, result);
+      
+      // Generate media URLs with actual violation ID (fast, no HTTP requests)
+      const violationWithId = { ...violation, id: violationId };
+      const mediaUrls = generateMediaUrls(violationWithId);
+
+      return {
+        timestamp: unixToISO(violation.timestamp),
+        timestampRelative: unixToReadable(violation.timestamp),
+        camera: violation.camera,
+        assignedEmployee: assignment.assignedEmployee,
+        assignmentMethod: assignment.assignmentMethod,
+        assignmentConfidence: assignment.confidence,
+        assignmentReason: assignment.assignmentReason || null,
+        faceEmployeeName,
+        deskEmployeeName: deskEmployeeName || null,
+        zones: zones,
+        objects: violation.objects || [],
+        confidence: violation.confidence ? parseFloat(violation.confidence) : null,
+        type: 'cell_phone',
+        // Media URLs
+        media: mediaUrls
+      };
+    });
+
+    return violations;
+  } catch (error) {
+    logger.error('Error getting cell phone violations', { error: error.message, filters });
+    throw error;
+  }
+};
+
+/**
+ * Get violations summary by employee
+ * @param {Object} filters - Filter options
+ * @returns {Promise<Array>} Violations summary by employee
+ */
+const getViolationsSummaryByEmployee = async (filters = {}) => {
+  try {
+    const violations = await getCellPhoneViolations(filters);
+    
+    // Group violations by assigned employee
+    const summary = violations.reduce((acc, violation) => {
+      const employee = violation.assignedEmployee;
+      if (!acc[employee]) {
+        acc[employee] = {
+          employeeName: employee,
+          totalViolations: 0,
+          violations: [],
+          assignmentMethods: {
+            face_recognition: 0,
+            desk_zone: 0,
+            unknown: 0
+          }
+        };
+      }
+      
+      acc[employee].totalViolations++;
+      acc[employee].violations.push(violation);
+      acc[employee].assignmentMethods[violation.assignmentMethod]++;
+      
+      return acc;
+    }, {});
+
+    // Convert to array and sort by violation count
+    return Object.values(summary).sort((a, b) => b.totalViolations - a.totalViolations);
+  } catch (error) {
+    logger.error('Error getting violations summary by employee', { error: error.message, filters });
+    throw error;
+  }
+};
+
+/**
+ * Get violations for specific employee
+ * @param {string} employeeName - Employee name
+ * @param {Object} filters - Filter options
+ * @returns {Promise<Array>} Violations for specific employee
+ */
+const getViolationsByEmployee = async (employeeName, filters = {}) => {
+  try {
+    // Get all violations first
+    const allViolations = await getCellPhoneViolations(filters);
+    
+    // Filter by assigned employee name
+    const employeeViolations = allViolations.filter(v => 
+      v.assignedEmployee === employeeName
+    );
+    
+    // Debug: Check what employee names we have
+    const uniqueEmployees = [...new Set(allViolations.map(v => v.assignedEmployee))];
+    logger.debug(`Found ${employeeViolations.length} violations for employee ${employeeName}`, {
+      employeeName,
+      totalViolations: allViolations.length,
+      employeeViolations: employeeViolations.length,
+      availableEmployees: uniqueEmployees.slice(0, 10) // Show first 10 for debugging
+    });
+    
+    return employeeViolations;
+  } catch (error) {
+    logger.error('Error getting violations by employee', { error: error.message, employeeName, filters });
+    throw error;
+  }
+};
+
+/**
+ * Get media URLs for a specific violation
+ * @param {string} violationId - Violation ID
+ * @param {string} camera - Camera name
+ * @param {number} timestamp - Unix timestamp
+ * @returns {Promise<Object>} Media URLs and metadata
+ */
+const getViolationMedia = async (violationId, camera, timestamp) => {
+  try {
+    const mediaUrls = getViolationMediaUrls(violationId, camera, timestamp);
+    
+    // Add additional metadata
+    const metadata = {
+      violation_id: violationId,
+      camera: camera,
+      timestamp: timestamp,
+      timestamp_iso: unixToISO(timestamp),
+      timestamp_relative: unixToReadable(timestamp),
+      generated_at: new Date().toISOString()
+    };
+    
+    return {
+      ...mediaUrls,
+      metadata
+    };
+  } catch (error) {
+    logger.error('Error getting violation media', { error: error.message, violationId, camera, timestamp });
+    throw error;
+  }
+};
+
+module.exports = {
+  getCellPhoneViolations,
+  getViolationsSummaryByEmployee,
+  getViolationsByEmployee,
+  getViolationMedia,
+  getEmployeeFromDeskZone,
+  generateMediaUrls,
+  getViolationMediaUrls,
+  DESK_EMPLOYEE_MAPPING
+};

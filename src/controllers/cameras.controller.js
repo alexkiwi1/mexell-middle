@@ -7,6 +7,12 @@ const {
   getCameraStatus, 
   getCameraViolations 
 } = require('../services/cameras.service');
+const { 
+  getCellPhoneViolations,
+  getViolationsSummaryByEmployee,
+  getViolationsByEmployee,
+  getViolationMedia
+} = require('../services/violations.service');
 const logger = require('../config/logger');
 
 /**
@@ -163,7 +169,7 @@ const getCameraStatusController = async (req, res, next) => {
 };
 
 /**
- * Get camera-specific violations (cell phone detections)
+ * Get camera-specific violations (cell phone detections) with employee assignment
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
@@ -172,14 +178,23 @@ const getCameraViolationsController = async (req, res, next) => {
   try {
     const { camera_name } = req.params;
     const { hours, limit, start_date, end_date } = req.query;
-    const options = {
+    
+    // Parse date/time range
+    const { parseDateTimeRange } = require('../services/frigate.service');
+    const { startTime, endTime } = parseDateTimeRange({
       hours: parseInt(hours, 10) || 24,
-      limit: parseInt(limit, 10) || 100,
       start_date: start_date || undefined,
-      end_date: end_date || undefined,
+      end_date: end_date || undefined
+    });
+
+    const filters = {
+      camera: camera_name,
+      startTime,
+      endTime,
+      limit: parseInt(limit, 10) || 100
     };
 
-    const violations = await getCameraViolations(camera_name, options);
+    const violations = await getCellPhoneViolations(filters);
     
     res.status(httpStatus.OK).json({
       success: true,
@@ -189,16 +204,150 @@ const getCameraViolationsController = async (req, res, next) => {
         count: violations.length,
         camera: camera_name,
         filters: {
-          hours: options.hours,
-          limit: options.limit,
-          start_date: options.start_date,
-          end_date: options.end_date
+          hours: parseInt(hours, 10) || 24,
+          limit: parseInt(limit, 10) || 100,
+          start_date: start_date || undefined,
+          end_date: end_date || undefined
         }
       },
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error(`Error in getCameraViolationsController for ${req.params.camera_name}:`, error);
+    next(error);
+  }
+};
+
+/**
+ * Get violations summary by employee
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const getViolationsSummaryByEmployeeController = async (req, res, next) => {
+  try {
+    const { hours, start_date, end_date, camera } = req.query;
+    
+    // Parse date/time range
+    const { parseDateTimeRange } = require('../services/frigate.service');
+    const { startTime, endTime } = parseDateTimeRange({
+      hours: parseInt(hours, 10) || 24,
+      start_date: start_date || undefined,
+      end_date: end_date || undefined
+    });
+
+    const filters = {
+      camera: camera || undefined,
+      startTime,
+      endTime
+    };
+
+    const summary = await getViolationsSummaryByEmployee(filters);
+    
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: 'Violations summary by employee retrieved successfully',
+      data: {
+        summary,
+        count: summary.length,
+        filters: {
+          hours: parseInt(hours, 10) || 24,
+          start_date: start_date || undefined,
+          end_date: end_date || undefined,
+          camera: camera || undefined
+        }
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error in getViolationsSummaryByEmployeeController:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get violations for specific employee
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const getViolationsByEmployeeController = async (req, res, next) => {
+  try {
+    const { employee_name } = req.params;
+    const { hours, start_date, end_date, camera, limit } = req.query;
+    
+    // Parse date/time range
+    const { parseDateTimeRange } = require('../services/frigate.service');
+    const { startTime, endTime } = parseDateTimeRange({
+      hours: parseInt(hours, 10) || 24,
+      start_date: start_date || undefined,
+      end_date: end_date || undefined
+    });
+
+    const filters = {
+      camera: camera || undefined,
+      startTime,
+      endTime,
+      limit: parseInt(limit, 10) || 100
+    };
+
+    const violations = await getViolationsByEmployee(employee_name, filters);
+    
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: `Violations for employee ${employee_name} retrieved successfully`,
+      data: {
+        violations,
+        count: violations.length,
+        employee: employee_name,
+        filters: {
+          hours: parseInt(hours, 10) || 24,
+          start_date: start_date || undefined,
+          end_date: end_date || undefined,
+          camera: camera || undefined,
+          limit: parseInt(limit, 10) || 100
+        }
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error(`Error in getViolationsByEmployeeController for ${req.params.employee_name}:`, error);
+    next(error);
+  }
+};
+
+/**
+ * Get media URLs for a specific violation
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const getViolationMediaController = async (req, res, next) => {
+  try {
+    const { violation_id, camera, timestamp } = req.params;
+    
+    // Convert timestamp to number if it's a string
+    const timestampNum = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
+    
+    if (!violation_id || !camera || !timestampNum) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        success: false,
+        message: 'Missing required parameters: violation_id, camera, and timestamp are required',
+        data: null,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const mediaData = await getViolationMedia(violation_id, camera, timestampNum);
+    
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: 'Violation media URLs retrieved successfully',
+      data: mediaData,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error(`Error in getViolationMediaController:`, error);
     next(error);
   }
 };
@@ -234,5 +383,8 @@ module.exports = {
   getCameraActivityController,
   getCameraStatusController,
   getCameraViolationsController,
+  getViolationsSummaryByEmployeeController,
+  getViolationsByEmployeeController,
+  getViolationMediaController,
   clearCameraCacheController,
 };
