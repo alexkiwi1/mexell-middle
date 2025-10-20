@@ -1,0 +1,1481 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-20T04:25:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_health_check",
+      "parentId": "fld_health",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/health",
+      "name": "Health Check",
+      "description": "Check API health and database connectivity",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_list",
+      "parentId": "fld_cameras",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/cameras",
+      "name": "Get Camera List",
+      "description": "Get list of all cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_summary",
+      "parentId": "fld_cameras",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/cameras/summary",
+      "name": "Get Camera Summary",
+      "description": "Get summary of all cameras with activity data",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back (fallback if no dates)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_activity",
+      "parentId": "fld_cameras",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/cameras/activity",
+      "name": "Get Camera Activity",
+      "description": "Get recent activity for all cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "1",
+          "description": "Hours to look back"
+        },
+        {
+          "name": "limit",
+          "value": "50",
+          "description": "Number of activities to return"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_status",
+      "parentId": "fld_cameras",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/cameras/status",
+      "name": "Get Camera Status",
+      "description": "Get detailed status for all cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_violations",
+      "parentId": "fld_cameras",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/cameras/violations",
+      "name": "Get Camera Violations",
+      "description": "Get violations summary for all cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back (fallback if no dates)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_violations",
+      "parentId": "fld_cameras",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/violations/employee/{{ _.employee_name }}",
+      "name": "Get Employee Violations",
+      "description": "Get violations for specific employee",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back (fallback if no dates)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_work_hours",
+      "parentId": "fld_employees",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/employees/work-hours",
+      "name": "Get Employee Work Hours",
+      "description": "Get work hours analysis for employees",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "employee_name",
+          "value": "Muhammad Arsalan",
+          "description": "Employee name (optional)"
+        },
+        {
+          "name": "camera",
+          "value": "employees_01",
+          "description": "Camera name (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_break_time",
+      "parentId": "fld_employees",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/employees/break-time",
+      "name": "Get Employee Break Time",
+      "description": "Get break time analysis for employees",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "employee_name",
+          "value": "Muhammad Arsalan",
+          "description": "Employee name (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_attendance",
+      "parentId": "fld_employees",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/employees/attendance",
+      "name": "Get Employee Attendance",
+      "description": "Get attendance data for employees",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "employee_name",
+          "value": "Muhammad Arsalan",
+          "description": "Employee name (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_activity_patterns",
+      "parentId": "fld_employees",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/employees/activity-patterns",
+      "name": "Get Employee Activity Patterns",
+      "description": "Get activity patterns for employees",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "employee_name",
+          "value": "Muhammad Arsalan",
+          "description": "Employee name (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_zone_desk_occupancy",
+      "parentId": "fld_zones",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/zones/desk-occupancy",
+      "name": "Get Desk Occupancy",
+      "description": "Get desk occupancy data for all zones",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "camera",
+          "value": "employees_01",
+          "description": "Camera name (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_zone_utilization",
+      "parentId": "fld_zones",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/zones/utilization",
+      "name": "Get Zone Utilization",
+      "description": "Get zone utilization statistics",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "camera",
+          "value": "employees_01",
+          "description": "Camera name (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_analytics_dashboard",
+      "parentId": "fld_analytics",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/analytics/dashboard",
+      "name": "Get Analytics Dashboard",
+      "description": "Get comprehensive analytics dashboard data",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_analytics_trends",
+      "parentId": "fld_analytics",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/analytics/trends",
+      "name": "Get Analytics Trends",
+      "description": "Get trend analysis data",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-20",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-20",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "trend_type",
+          "value": "violations",
+          "description": "Type of trend analysis"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_mobile_dashboard",
+      "parentId": "fld_mobile",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/mobile/dashboard",
+      "name": "Get Mobile Dashboard",
+      "description": "Get mobile-optimized dashboard data",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "1",
+          "description": "Hours to look back"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_mobile_violations",
+      "parentId": "fld_mobile",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/mobile/violations",
+      "name": "Get Mobile Violations",
+      "description": "Get mobile-optimized violations list",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "1",
+          "description": "Hours to look back"
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "description": "Number of violations to return"
+        },
+        {
+          "name": "offset",
+          "value": "0",
+          "description": "Number of violations to skip"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_mobile_employees",
+      "parentId": "fld_mobile",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/mobile/employees",
+      "name": "Get Mobile Employee Status",
+      "description": "Get mobile-optimized employee status",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "1",
+          "description": "Hours to look back"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_mobile_cameras",
+      "parentId": "fld_mobile",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/mobile/cameras",
+      "name": "Get Mobile Camera Status",
+      "description": "Get mobile-optimized camera status",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "1",
+          "description": "Hours to look back"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_mobile_notifications",
+      "parentId": "fld_mobile",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/mobile/notifications",
+      "name": "Get Mobile Notifications",
+      "description": "Get mobile-optimized notifications",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "1",
+          "description": "Hours to look back"
+        },
+        {
+          "name": "limit",
+          "value": "10",
+          "description": "Number of notifications to return"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_mobile_sync",
+      "parentId": "fld_mobile",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/mobile/sync",
+      "name": "Get Mobile Sync Data",
+      "description": "Get data for offline synchronization",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "50",
+          "description": "Number of items to sync"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_mobile_settings",
+      "parentId": "fld_mobile",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/mobile/settings",
+      "name": "Get Mobile Settings",
+      "description": "Get mobile app settings and configuration",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_performance_metrics",
+      "parentId": "fld_performance",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/performance/metrics",
+      "name": "Get Performance Metrics",
+      "description": "Get detailed performance metrics",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_performance_summary",
+      "parentId": "fld_performance",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/performance/summary",
+      "name": "Get Performance Summary",
+      "description": "Get performance summary with percentiles",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_performance_health",
+      "parentId": "fld_performance",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/performance/health",
+      "name": "Get System Health",
+      "description": "Get overall system health status",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_performance_recommendations",
+      "parentId": "fld_performance",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/performance/recommendations",
+      "name": "Get Performance Recommendations",
+      "description": "Get performance optimization recommendations",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_cache_stats",
+      "parentId": "fld_performance",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/performance/cache/stats",
+      "name": "Get Cache Statistics",
+      "description": "Get cache statistics and performance",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_cache_keys",
+      "parentId": "fld_performance",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/performance/cache/keys",
+      "name": "Get Cache Keys",
+      "description": "Get all cache keys",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_cache_clear",
+      "parentId": "fld_performance",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/performance/cache/clear",
+      "name": "Clear Cache",
+      "description": "Clear all cache entries",
+      "method": "POST",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_performance_reset",
+      "parentId": "fld_performance",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/performance/reset",
+      "name": "Reset Performance Metrics",
+      "description": "Reset all performance metrics",
+      "method": "POST",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_websocket_stats",
+      "parentId": "fld_websocket",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/websocket/stats",
+      "name": "Get WebSocket Stats",
+      "description": "Get WebSocket connection statistics",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_websocket_activity",
+      "parentId": "fld_websocket",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/websocket/activity",
+      "name": "Get WebSocket Activity",
+      "description": "Get real-time activity summary",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "1",
+          "description": "Hours to look back"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_websocket_test",
+      "parentId": "fld_websocket",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/api/websocket/test",
+      "name": "Send WebSocket Test Event",
+      "description": "Send test event to WebSocket clients",
+      "method": "POST",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_media_proxy",
+      "parentId": "fld_media",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/media/",
+      "name": "Media Proxy Root",
+      "description": "Access media proxy root directory",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_media_recordings",
+      "parentId": "fld_media",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/media/recordings/",
+      "name": "Media Recordings Directory",
+      "description": "Access recordings directory",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_media_clips",
+      "parentId": "fld_media",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/media/clips/",
+      "name": "Media Clips Directory",
+      "description": "Access clips directory",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_swagger_docs",
+      "parentId": "fld_documentation",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/docs",
+      "name": "Swagger Documentation",
+      "description": "Access Swagger API documentation",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_swagger_json",
+      "parentId": "fld_documentation",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "url": "{{ _.base_url }}/v1/docs/swagger.json",
+      "name": "Swagger JSON",
+      "description": "Get Swagger API specification in JSON format",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734675900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "env_frigate_middleware",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Frigate Middleware Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002",
+        "employee_name": "Muhammad Arsalan",
+        "camera_name": "employees_01",
+        "start_date": "2025-10-20",
+        "end_date": "2025-10-20",
+        "hours": "24"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "employee_name",
+          "camera_name",
+          "start_date",
+          "end_date",
+          "hours"
+        ]
+      },
+      "color": "#7d69cb",
+      "isPrivate": false,
+      "propertyOrder": {},
+      "_type": "environment"
+    },
+    {
+      "_id": "wrk_frigate_middleware",
+      "parentId": null,
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Frigate Middleware API",
+      "description": "Complete Frigate surveillance middleware API with mobile support, performance monitoring, and real-time features",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "fld_health",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Health & Status",
+      "description": "Health check and system status endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_cameras",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Camera Management",
+      "description": "Camera monitoring, activity, and violation tracking",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_employees",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Employee Tracking",
+      "description": "Employee work hours, breaks, attendance, and activity patterns",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_zones",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Zone Management",
+      "description": "Zone occupancy, utilization, and employee preferences",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_analytics",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Analytics & Reporting",
+      "description": "Advanced analytics, trends, and reporting features",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_mobile",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Mobile APIs",
+      "description": "Mobile-optimized endpoints for mobile applications",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_performance",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Performance Monitoring",
+      "description": "Performance metrics, caching, and system health monitoring",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_websocket",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "WebSocket & Real-time",
+      "description": "Real-time event streaming and WebSocket management",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_media",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Media & Files",
+      "description": "Media proxy and file access endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_documentation",
+      "parentId": "wrk_frigate_middleware",
+      "modified": 1734675900000,
+      "created": 1734675900000,
+      "name": "Documentation",
+      "description": "API documentation and specifications",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734675900000,
+      "_type": "request_group"
+    }
+  ]
+}
