@@ -1,0 +1,219 @@
+# Mexell Middleware - Cursor AI Rules
+# Node.js Express API Middleware with TypeScript, MongoDB, and Docker
+
+## Project Overview
+You are working on a production-ready RESTful API middleware built with Node.js, Express, TypeScript, MongoDB, and Docker. This is a boilerplate project for building scalable backend services.
+
+## Tech Stack
+- **Runtime**: Node.js 18+ (Alpine Linux in Docker)
+- **Framework**: Express.js
+- **Language**: JavaScript (ES6+)
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT (JSON Web Tokens)
+- **Validation**: Joi
+- **Logging**: Winston
+- **Containerization**: Docker & Docker Compose
+- **Testing**: Jest
+- **Code Quality**: ESLint, Prettier
+
+## Code Style and Structure
+
+### Naming Conventions
+- Use camelCase for variables, functions, and object properties
+- Use PascalCase for constructors and classes
+- Use UPPER_SNAKE_CASE for constants
+- Use kebab-case for file names (e.g., user-controller.js)
+- Use descriptive names that clearly indicate purpose
+
+### File Organization
+```
+src/
+├── config/          # Configuration files
+├── controllers/     # Route controllers
+├── middlewares/     # Custom middleware
+├── models/          # Mongoose models
+├── routes/          # Route definitions
+├── services/        # Business logic
+├── utils/           # Utility functions
+├── validations/     # Joi validation schemas
+├── app.js           # Express app setup
+└── index.js         # Application entry point
+```
+
+### TypeScript/JavaScript Best Practices
+- Use const for variables that won't be reassigned
+- Use let for variables that will be reassigned
+- Avoid var completely
+- Use arrow functions for short, simple functions
+- Use async/await instead of Promises.then()
+- Always handle errors with try-catch blocks
+- Use destructuring for object and array assignments
+- Use template literals for string interpolation
+
+### Express.js Patterns
+- Use middleware for cross-cutting concerns
+- Implement proper error handling middleware
+- Use route parameters and query strings appropriately
+- Implement proper HTTP status codes
+- Use appropriate HTTP methods (GET, POST, PUT, PATCH, DELETE)
+- Implement request validation before processing
+- Use response compression and security headers
+
+### MongoDB/Mongoose Patterns
+- Define schemas with proper validation
+- Use indexes for frequently queried fields
+- Implement proper error handling for database operations
+- Use transactions for multi-document operations
+- Implement proper pagination for large datasets
+- Use lean queries when you don't need Mongoose documents
+
+### Authentication & Security
+- Always validate JWT tokens
+- Implement proper password hashing with bcrypt
+- Use environment variables for sensitive data
+- Implement rate limiting
+- Use CORS appropriately
+- Sanitize user input
+- Implement proper error messages (don't expose sensitive info)
+
+### Error Handling
+- Use custom error classes
+- Implement centralized error handling
+- Log errors appropriately
+- Return consistent error response format
+- Handle both synchronous and asynchronous errors
+- Use proper HTTP status codes
+
+### API Design
+- Follow RESTful conventions
+- Use consistent URL patterns (/api/v1/resource)
+- Implement proper HTTP status codes
+- Use appropriate response formats (JSON)
+- Implement pagination for list endpoints
+- Use proper HTTP headers
+- Document API endpoints
+
+### Docker & Containerization
+- Use multi-stage builds when appropriate
+- Keep images small (use Alpine Linux)
+- Don't run as root user
+- Use proper .dockerignore
+- Implement health checks
+- Use environment variables for configuration
+- Optimize layer caching
+
+### Testing
+- Write unit tests for utility functions
+- Write integration tests for API endpoints
+- Mock external dependencies
+- Test error scenarios
+- Use descriptive test names
+- Maintain good test coverage
+- Test both success and failure cases
+
+### Code Quality
+- Use ESLint for code linting
+- Use Prettier for code formatting
+- Write self-documenting code
+- Use meaningful comments
+- Keep functions small and focused
+- Avoid deep nesting
+- Use early returns to reduce complexity
+
+## Common Patterns
+
+### Controller Pattern
+```javascript
+const catchAsync = require('../utils/catchAsync');
+const ApiError = require('../utils/ApiError');
+
+const getUsers = catchAsync(async (req, res) => {
+  const users = await User.find();
+  res.json(users);
+});
+```
+
+### Service Pattern
+```javascript
+const userService = {
+  async createUser(userData) {
+    const user = await User.create(userData);
+    return user;
+  }
+};
+```
+
+### Middleware Pattern
+```javascript
+const auth = () => {
+  return async (req, res, next) => {
+    // Authentication logic
+    next();
+  };
+};
+```
+
+### Error Handling Pattern
+```javascript
+const errorHandler = (err, req, res, next) => {
+  let error = { ...err };
+  error.message = err.message;
+
+  if (err.name === 'ValidationError') {
+    const message = Object.values(err.errors).map(val => val.message);
+    error = new ApiError(message, 400);
+  }
+
+  res.status(error.statusCode || 500).json({
+    success: false,
+    error: error.message || 'Server Error'
+  });
+};
+```
+
+## Environment Variables
+Always use environment variables for:
+- Database connection strings
+- JWT secrets
+- API keys
+- Port numbers
+- SMTP configuration
+- Any sensitive configuration
+
+## Documentation
+- Use JSDoc for function documentation
+- Document API endpoints with Swagger/OpenAPI
+- Keep README.md updated
+- Document environment variables
+- Include setup and deployment instructions
+
+## Performance Considerations
+- Use database indexes
+- Implement caching where appropriate
+- Use connection pooling
+- Optimize database queries
+- Implement proper pagination
+- Use compression middleware
+- Monitor memory usage
+
+## Security Best Practices
+- Validate all input
+- Sanitize data before database operations
+- Use HTTPS in production
+- Implement proper CORS policies
+- Use security headers (helmet.js)
+- Rate limit API endpoints
+- Log security events
+- Regular dependency updates
+
+## When making changes:
+1. Follow the existing code patterns
+2. Maintain consistency with the current architecture
+3. Add appropriate error handling
+4. Update tests if needed
+5. Consider performance implications
+6. Ensure security best practices
+7. Update documentation if necessary
+8. Test your changes thoroughly
+
+Remember: This is a production-ready boilerplate, so maintain high code quality standards and follow established patterns.

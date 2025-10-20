@@ -1,0 +1,483 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-19T23:20:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_health_check",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/health",
+      "name": "Health Check",
+      "description": "Test PostgreSQL connection and service health",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657600000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_root_endpoint",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/",
+      "name": "Root Endpoint",
+      "description": "Get API information and metadata",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657599000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_api_info",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/info",
+      "name": "API Info",
+      "description": "Get detailed API configuration and features",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657598000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_cameras_list",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/cameras/list",
+      "name": "Cameras List",
+      "description": "Get list of all available cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657597000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_recent_recordings",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/recordings",
+      "name": "Recent Recordings",
+      "description": "Get recent video recordings with streaming URLs",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "camera",
+          "value": "employees_01",
+          "description": "Filter by camera name (optional)"
+        },
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum number of recordings (default: 50)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657596000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_recent_recordings_all",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/recordings",
+      "name": "Recent Recordings (All Cameras)",
+      "description": "Get recent recordings from all cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10",
+          "description": "Maximum number of recordings"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657595000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_recent_clips",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/clips",
+      "name": "Recent Clips",
+      "description": "Get recent clips with thumbnail URLs",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "camera",
+          "value": "employees_04",
+          "description": "Filter by camera name (optional)"
+        },
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum number of clips (default: 50)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657594000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_recent_clips_all",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/clips",
+      "name": "Recent Clips (All Cameras)",
+      "description": "Get recent clips from all cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10",
+          "description": "Maximum number of clips"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657593000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_test_media",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/test-media",
+      "name": "Test Media URLs",
+      "description": "Test media URL accessibility",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657592000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_test_media_clip",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/test-media",
+      "name": "Test Media URLs (Specific Clip)",
+      "description": "Test specific clip ID media URL",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "clip_id",
+          "value": "1760915764.052192-k1dp3s",
+          "description": "Specific clip ID to test"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657591000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_test_media_recording",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/test-media",
+      "name": "Test Media URLs (Specific Recording)",
+      "description": "Test specific recording ID media URL",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "recording_id",
+          "value": "1760915899.0-teptn7",
+          "description": "Specific recording ID to test"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657590000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_media_proxy_video",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/media/recordings/2025-10-19/23/employees_02/18.19.mp4",
+      "name": "Media Proxy - Video Stream",
+      "description": "Test video streaming through media proxy",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "video/mp4, video/*, */*"
+        },
+        {
+          "name": "Range",
+          "value": "bytes=0-1023",
+          "description": "Test range requests for video streaming"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657589000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_media_proxy_thumbnail",
+      "parentId": "fld_phase1",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "url": "{{ _.base_url }}/media/clips/review/thumb-employees_04-1760915764.052192-k1dp3s.webp",
+      "name": "Media Proxy - Thumbnail",
+      "description": "Test thumbnail image through media proxy",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "image/webp, image/*, */*"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734657588000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_phase1",
+      "parentId": "wrk_frigate_api",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "name": "Phase 1: Foundation & Media",
+      "description": "Phase 1 endpoints - Foundation and Media APIs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734657600000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_frigate_api",
+      "parentId": null,
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "name": "Frigate Middleware API",
+      "description": "Comprehensive middleware service for Frigate surveillance dashboard",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_frigate_api",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:5002"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1734657600000,
+      "_type": "environment"
+    },
+    {
+      "_id": "env_production",
+      "parentId": "wrk_frigate_api",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "name": "Production Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url"
+        ]
+      },
+      "color": "#7d69cb",
+      "isPrivate": false,
+      "metaSortKey": 1734657600001,
+      "_type": "environment"
+    }
+  ]
+}

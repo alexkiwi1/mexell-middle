@@ -7,7 +7,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
-    PORT: Joi.number().default(3000),
+    PORT: Joi.number().default(5002),
     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
@@ -23,6 +23,13 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description('username for email server'),
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
+    // Frigate Database Configuration
+    FRIGATE_DB_HOST: Joi.string().required().description('Frigate PostgreSQL host'),
+    FRIGATE_DB_PORT: Joi.number().required().description('Frigate PostgreSQL port'),
+    FRIGATE_DB_NAME: Joi.string().required().description('Frigate PostgreSQL database name'),
+    FRIGATE_DB_USER: Joi.string().required().description('Frigate PostgreSQL username'),
+    FRIGATE_DB_PASSWORD: Joi.string().required().description('Frigate PostgreSQL password'),
+    VIDEO_SERVER_URL: Joi.string().required().description('Frigate video server URL'),
   })
   .unknown();
 
@@ -60,5 +67,14 @@ module.exports = {
       },
     },
     from: envVars.EMAIL_FROM,
+  },
+  // Frigate Database Configuration (READ-ONLY)
+  frigate: {
+    host: envVars.FRIGATE_DB_HOST,
+    port: envVars.FRIGATE_DB_PORT,
+    database: envVars.FRIGATE_DB_NAME,
+    user: envVars.FRIGATE_DB_USER,
+    password: envVars.FRIGATE_DB_PASSWORD,
+    videoServerUrl: envVars.VIDEO_SERVER_URL,
   },
 };

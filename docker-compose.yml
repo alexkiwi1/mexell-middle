@@ -5,13 +5,19 @@ services:
     build: .
     image: node-app
     environment:
+      - NODE_ENV=development
       - MONGODB_URL=mongodb://mongodb:27017/node-boilerplate
+      - PORT=5002
+      - FRIGATE_DB_HOST=10.0.20.6
+      - FRIGATE_DB_PORT=5433
+      - FRIGATE_DB_NAME=frigate_db
+      - FRIGATE_DB_USER=frigate
+      - FRIGATE_DB_PASSWORD=frigate_secure_pass_2024
+      - VIDEO_SERVER_URL=http://10.0.20.6:8000
     ports:
-      - '3000:3000'
+      - '5002:5002'
     depends_on:
       - mongodb
-    volumes:
-      - .:/usr/src/node-app
     networks:
       - node-network
 

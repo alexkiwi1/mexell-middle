@@ -2,6 +2,9 @@ const express = require('express');
 const authRoute = require('./auth.route');
 const userRoute = require('./user.route');
 const docsRoute = require('./docs.route');
+const healthRoute = require('./health.route');
+const camerasRoute = require('./cameras.route');
+const mediaRoute = require('./media.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -14,6 +17,19 @@ const defaultRoutes = [
   {
     path: '/users',
     route: userRoute,
+  },
+  // Frigate API routes
+  {
+    path: '/',
+    route: healthRoute,
+  },
+  {
+    path: '/',
+    route: camerasRoute,
+  },
+  {
+    path: '/',
+    route: mediaRoute,
   },
 ];
 

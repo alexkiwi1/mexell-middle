@@ -1,0 +1,347 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-19T23:45:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_frigate_simple",
+      "parentId": null,
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Frigate Middleware API - Simple Tests",
+      "description": "Simple test collection for Phase 1 & 2 endpoints",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_dev",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "Development",
+      "data": {
+        "base_url": "http://10.100.6.2:5002"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url"
+        ]
+      },
+      "color": "#7d69cb",
+      "isPrivate": false,
+      "metaSortKey": 1734659100000,
+      "_type": "environment"
+    },
+    {
+      "_id": "req_health",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/health",
+      "name": "1.1 Health Check",
+      "description": "Test health endpoint",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_1",
+          "name": "Health Check Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('healthy');\n  \n  // Test database connections\n  expect(data.data.database.postgresql).toBe('Connected');\n  expect(data.data.database.mongodb).toBe('Connected');\n  \n  console.log('✅ Health check passed - All services healthy');\n} else {\n  throw new Error(`Health check failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_root",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/",
+      "name": "1.2 Root Endpoint",
+      "description": "Test root endpoint",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659099000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_2",
+          "name": "Root Endpoint Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Frigate Middleware API');\n  \n  // Test API info\n  expect(data.data.name).toBe('Frigate Middleware API');\n  expect(data.data.version).toBe('1.0.0');\n  \n  console.log('✅ Root endpoint passed - API info retrieved');\n} else {\n  throw new Error(`Root endpoint failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_cameras",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/api/cameras/list",
+      "name": "1.3 Cameras List",
+      "description": "Test cameras list",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659098000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_3",
+          "name": "Cameras List Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Cameras retrieved successfully');\n  \n  // Test cameras array\n  expect(Array.isArray(data.data.cameras)).toBe(true);\n  expect(data.data.cameras.length).toBeGreaterThan(0);\n  \n  console.log(`✅ Cameras list passed - Found ${data.data.cameras.length} cameras`);\n} else {\n  throw new Error(`Cameras list failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_recordings",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/recordings?limit=3",
+      "name": "1.4 Recent Recordings",
+      "description": "Test recent recordings",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659097000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_4",
+          "name": "Recent Recordings Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Recent recordings retrieved successfully');\n  \n  // Test recordings array\n  expect(Array.isArray(data.data.recordings)).toBe(true);\n  \n  console.log(`✅ Recent recordings passed - Found ${data.data.recordings.length} recordings`);\n} else {\n  throw new Error(`Recent recordings failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_clips",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/clips?limit=3",
+      "name": "1.5 Recent Clips",
+      "description": "Test recent clips",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659096000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_5",
+          "name": "Recent Clips Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Recent clips retrieved successfully');\n  \n  // Test clips array\n  expect(Array.isArray(data.data.clips)).toBe(true);\n  \n  console.log(`✅ Recent clips passed - Found ${data.data.clips.length} clips`);\n} else {\n  throw new Error(`Recent clips failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_summary",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/api/cameras/summary?hours=24",
+      "name": "2.1 Camera Summary (All)",
+      "description": "Test camera summary all",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659095000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_6",
+          "name": "Camera Summary All Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Camera summaries retrieved successfully');\n  \n  // Test summaries array\n  expect(Array.isArray(data.data.summaries)).toBe(true);\n  \n  console.log(`✅ Camera summary all passed - Found ${data.data.summaries.length} summaries`);\n} else {\n  throw new Error(`Camera summary all failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_specific",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/summary?hours=24",
+      "name": "2.2 Camera Summary (Specific)",
+      "description": "Test specific camera summary",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659094000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_7",
+          "name": "Camera Summary Specific Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Camera summary for employees_01 retrieved successfully');\n  \n  // Test camera data\n  expect(data.data.camera).toBe('employees_01');\n  expect(data.data.status).toBeDefined();\n  \n  console.log(`✅ Camera summary specific passed - Camera: ${data.data.camera}, Status: ${data.data.status}`);\n} else {\n  throw new Error(`Camera summary specific failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_activity",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/activity?hours=1&limit=5",
+      "name": "2.3 Camera Activity",
+      "description": "Test camera activity",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659093000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_8",
+          "name": "Camera Activity Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Camera activity for employees_01 retrieved successfully');\n  \n  // Test activities array\n  expect(Array.isArray(data.data.activities)).toBe(true);\n  \n  console.log(`✅ Camera activity passed - Found ${data.data.activities.length} activities`);\n} else {\n  throw new Error(`Camera activity failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_status",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/status",
+      "name": "2.4 Camera Status",
+      "description": "Test camera status",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659092000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_9",
+          "name": "Camera Status Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Camera status for employees_01 retrieved successfully');\n  \n  // Test camera data\n  expect(data.data.camera).toBe('employees_01');\n  expect(data.data.status).toBeDefined();\n  \n  console.log(`✅ Camera status passed - Camera: ${data.data.camera}, Status: ${data.data.status}`);\n} else {\n  throw new Error(`Camera status failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_violations",
+      "parentId": "wrk_frigate_simple",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/violations?hours=24&limit=5",
+      "name": "2.5 Camera Violations",
+      "description": "Test camera violations",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659091000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_10",
+          "name": "Camera Violations Test",
+          "script": "const response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('Camera violations for employees_01 retrieved successfully');\n  \n  // Test violations array\n  expect(Array.isArray(data.data.violations)).toBe(true);\n  \n  console.log(`✅ Camera violations passed - Found ${data.data.violations.length} violations`);\n} else {\n  throw new Error(`Camera violations failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    }
+  ]
+}

@@ -1,0 +1,530 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-20T00:56:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_frigate_datetime",
+      "_type": "workspace",
+      "name": "Frigate Middleware API - Date/Time Support",
+      "description": "Complete API collection with date/time parameter support",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_development",
+      "parentId": "wrk_frigate_datetime",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Development Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002",
+        "frigate_db": "10.0.20.6:5433",
+        "video_server": "http://10.0.20.6:8000"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "frigate_db",
+          "video_server"
+        ]
+      }
+    },
+    {
+      "_id": "env_production",
+      "parentId": "wrk_frigate_datetime",
+      "modified": 1734657600000,
+      "created": 1734657600000,
+      "name": "Production Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url"
+        ]
+      }
+    },
+    {
+      "_id": "fld_phase1",
+      "parentId": "wrk_frigate_datetime",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Phase 1 - Foundation APIs",
+      "description": "Basic health, info, and camera listing endpoints"
+    },
+    {
+      "_id": "fld_phase2",
+      "parentId": "wrk_frigate_datetime",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Phase 2 - Camera Monitoring",
+      "description": "Advanced camera monitoring with date/time support"
+    },
+    {
+      "_id": "fld_datetime_examples",
+      "parentId": "wrk_frigate_datetime",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Date/Time Examples",
+      "description": "Examples of date/time parameter usage"
+    },
+    {
+      "_id": "req_health_check",
+      "parentId": "fld_phase1",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "1.1 Health Check",
+      "url": "{{ _.base_url }}/v1/health",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_health_status",
+          "name": "Health Check Status",
+          "script": "// Test health check endpoint\nconst response = await insomnia.send();\n\n// Check if response is successful\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('healthy');\n  \n  // Test 2: Check database connection\n  expect(data.data.database.postgresql).toBe('Connected');\n  expect(data.data.database.mongodb).toBe('Connected');\n  \n  // Test 3: Check timestamp format\n  expect(data.timestamp).toMatch(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/);\n  \n  console.log('✅ Health check passed - All services healthy');\n} else {\n  throw new Error(`Health check failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_cameras_list",
+      "parentId": "fld_phase1",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "1.2 Cameras List",
+      "url": "{{ _.base_url }}/v1/api/cameras/list",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_cameras_list",
+          "name": "Cameras List Test",
+          "script": "// Test cameras list endpoint\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.data.cameras).toBeDefined();\n  expect(Array.isArray(data.data.cameras)).toBe(true);\n  \n  // Test 2: Check camera count\n  expect(data.data.count).toBeGreaterThan(0);\n  expect(data.data.total_cameras).toBe(data.data.cameras.length);\n  \n  // Test 3: Check for expected cameras\n  const cameras = data.data.cameras;\n  expect(cameras).toContain('employees_01');\n  expect(cameras).toContain('employees_02');\n  \n  console.log(`✅ Cameras list passed - Found ${cameras.length} cameras`);\n} else {\n  throw new Error(`Cameras list failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_summary_basic",
+      "parentId": "fld_phase2",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.1 Camera Summary (Last 24h)",
+      "url": "{{ _.base_url }}/v1/api/cameras/summary",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_summary_basic",
+          "name": "Camera Summary Basic Test",
+          "script": "// Test camera summary endpoint\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.data.summaries).toBeDefined();\n  expect(Array.isArray(data.data.summaries)).toBe(true);\n  \n  // Test 2: Check filter parameters\n  expect(data.data.filters.hours).toBe(24);\n  \n  // Test 3: Check summary data\n  const summaries = data.data.summaries;\n  expect(summaries.length).toBeGreaterThan(0);\n  \n  // Test 4: Check camera data structure\n  const firstCamera = summaries[0];\n  expect(firstCamera.camera).toBeDefined();\n  expect(firstCamera.status).toBeDefined();\n  expect(firstCamera.detections).toBeDefined();\n  \n  console.log(`✅ Camera summary passed - Found ${summaries.length} camera summaries`);\n} else {\n  throw new Error(`Camera summary failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_summary_date",
+      "parentId": "fld_datetime_examples",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.2 Camera Summary (Specific Date)",
+      "url": "{{ _.base_url }}/v1/api/cameras/summary",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-01",
+          "description": "Start date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-01",
+          "description": "End date (YYYY-MM-DD)",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_summary_date",
+          "name": "Camera Summary Date Test",
+          "script": "// Test camera summary with date range\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.data.summaries).toBeDefined();\n  \n  // Test 2: Check date filters\n  expect(data.data.filters.start_date).toBe('2025-10-01');\n  expect(data.data.filters.end_date).toBe('2025-10-01');\n  \n  // Test 3: Check for activity data\n  const summaries = data.data.summaries;\n  const activeCameras = summaries.filter(c => c.status === 'active');\n  expect(activeCameras.length).toBeGreaterThan(0);\n  \n  console.log(`✅ Camera summary with date range passed - Found ${activeCameras.length} active cameras`);\n} else {\n  throw new Error(`Camera summary with date failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_summary_time",
+      "parentId": "fld_datetime_examples",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.3 Camera Summary (Time Range)",
+      "url": "{{ _.base_url }}/v1/api/cameras/summary",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-01T08:00:00.000Z",
+          "description": "Start time (ISO format)",
+          "disabled": false
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-01T17:00:00.000Z",
+          "description": "End time (ISO format)",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_summary_time",
+          "name": "Camera Summary Time Test",
+          "script": "// Test camera summary with time range\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  \n  // Test 2: Check time filters\n  expect(data.data.filters.start_date).toBe('2025-10-01T08:00:00.000Z');\n  expect(data.data.filters.end_date).toBe('2025-10-01T17:00:00.000Z');\n  \n  console.log('✅ Camera summary with time range passed - Work hours analysis');\n} else {\n  throw new Error(`Camera summary with time failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_violations_basic",
+      "parentId": "fld_phase2",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.4 Camera Violations (Last 24h)",
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/violations",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "10",
+          "description": "Maximum violations to return",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_violations_basic",
+          "name": "Camera Violations Basic Test",
+          "script": "// Test camera violations endpoint\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.data.violations).toBeDefined();\n  expect(Array.isArray(data.data.violations)).toBe(true);\n  \n  // Test 2: Check filter parameters\n  expect(data.data.filters.hours).toBe(24);\n  expect(data.data.filters.limit).toBe(10);\n  \n  // Test 3: Check violations data\n  const violations = data.data.violations;\n  expect(violations.length).toBeLessThanOrEqual(10);\n  \n  if (violations.length > 0) {\n    const firstViolation = violations[0];\n    expect(firstViolation.timestamp).toBeDefined();\n    expect(firstViolation.type).toBe('cell_phone');\n  }\n  \n  console.log(`✅ Camera violations passed - Found ${violations.length} violations`);\n} else {\n  throw new Error(`Camera violations failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_violations_date",
+      "parentId": "fld_datetime_examples",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.5 Camera Violations (Specific Date)",
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/violations",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-01",
+          "description": "Start date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-01",
+          "description": "End date (YYYY-MM-DD)",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum violations to return",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_violations_date",
+          "name": "Camera Violations Date Test",
+          "script": "// Test camera violations with date range\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  \n  // Test 2: Check date filters\n  expect(data.data.filters.start_date).toBe('2025-10-01');\n  expect(data.data.filters.end_date).toBe('2025-10-01');\n  expect(data.data.filters.limit).toBe(5);\n  \n  // Test 3: Check violations data\n  const violations = data.data.violations;\n  expect(violations.length).toBeLessThanOrEqual(5);\n  \n  console.log(`✅ Camera violations with date range passed - Found ${violations.length} violations`);\n} else {\n  throw new Error(`Camera violations with date failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_violations_time",
+      "parentId": "fld_datetime_examples",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.6 Camera Violations (Time Range)",
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/violations",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-01T10:00:00.000Z",
+          "description": "Start time (ISO format)",
+          "disabled": false
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-01T12:00:00.000Z",
+          "description": "End time (ISO format)",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "3",
+          "description": "Maximum violations to return",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_violations_time",
+          "name": "Camera Violations Time Test",
+          "script": "// Test camera violations with time range\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  \n  // Test 2: Check time filters\n  expect(data.data.filters.start_date).toBe('2025-10-01T10:00:00.000Z');\n  expect(data.data.filters.end_date).toBe('2025-10-01T12:00:00.000Z');\n  \n  // Test 3: Check violations data\n  const violations = data.data.violations;\n  expect(violations.length).toBeLessThanOrEqual(3);\n  \n  console.log(`✅ Camera violations with time range passed - Found ${violations.length} violations`);\n} else {\n  throw new Error(`Camera violations with time failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_activity",
+      "parentId": "fld_phase2",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.7 Camera Activity Feed",
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/activity",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "1",
+          "description": "Hours to look back",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum activities to return",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_activity",
+          "name": "Camera Activity Test",
+          "script": "// Test camera activity endpoint\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.data.activities).toBeDefined();\n  expect(Array.isArray(data.data.activities)).toBe(true);\n  \n  // Test 2: Check filter parameters\n  expect(data.data.filters.hours).toBe(1);\n  expect(data.data.filters.limit).toBe(5);\n  \n  // Test 3: Check activities data\n  const activities = data.data.activities;\n  expect(activities.length).toBeLessThanOrEqual(5);\n  \n  console.log(`✅ Camera activity passed - Found ${activities.length} activities`);\n} else {\n  throw new Error(`Camera activity failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_status",
+      "parentId": "fld_phase2",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.8 Camera Status",
+      "url": "{{ _.base_url }}/v1/api/cameras/employees_01/status",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_camera_status",
+          "name": "Camera Status Test",
+          "script": "// Test camera status endpoint\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.data.camera).toBe('employees_01');\n  expect(data.data.status).toBeDefined();\n  \n  // Test 2: Check status data\n  expect(data.data.health).toBeDefined();\n  expect(data.data.metrics).toBeDefined();\n  \n  console.log(`✅ Camera status passed - Status: ${data.data.status}`);\n} else {\n  throw new Error(`Camera status failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_media_clips",
+      "parentId": "fld_phase1",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "1.3 Recent Media Clips",
+      "url": "{{ _.base_url }}/v1/api/recent-media/clips",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "camera",
+          "value": "employees_01",
+          "description": "Camera filter",
+          "disabled": false
+        },
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum clips to return",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_media_clips",
+          "name": "Media Clips Test",
+          "script": "// Test media clips endpoint\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.data.clips).toBeDefined();\n  expect(Array.isArray(data.data.clips)).toBe(true);\n  \n  // Test 2: Check clips data\n  const clips = data.data.clips;\n  expect(clips.length).toBeLessThanOrEqual(5);\n  \n  console.log(`✅ Media clips passed - Found ${clips.length} clips`);\n} else {\n  throw new Error(`Media clips failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_clear_cache",
+      "parentId": "fld_phase2",
+      "modified": 1734659100000,
+      "created": 1734659100000,
+      "name": "2.9 Clear Camera Cache",
+      "url": "{{ _.base_url }}/v1/api/cameras/cache",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1734659100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingFollowRedirects": "global",
+      "tests": [
+        {
+          "id": "test_clear_cache",
+          "name": "Clear Cache Test",
+          "script": "// Test clear cache endpoint\nconst response = await insomnia.send();\n\nif (response.status === 200) {\n  const data = response.json;\n  \n  // Test 1: Check response structure\n  expect(data.success).toBe(true);\n  expect(data.message).toContain('cache');\n  \n  console.log('✅ Clear cache passed - Cache cleared successfully');\n} else {\n  throw new Error(`Clear cache failed with status ${response.status}`);\n}",
+          "type": "script"
+        }
+      ],
+      "_type": "request"
+    }
+  ]
+}

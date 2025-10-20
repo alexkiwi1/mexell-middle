@@ -1,0 +1,567 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-19T23:30:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_frigate_automated",
+      "parentId": null,
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Frigate Middleware API - Automated Tests",
+      "description": "Complete automated test collection for Phase 1 endpoints",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_development",
+      "parentId": "wrk_frigate_automated",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Development Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002",
+        "frigate_db": "10.0.20.6:5433",
+        "video_server": "http://10.0.20.6:8000"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "frigate_db",
+          "video_server"
+        ]
+      },
+      "color": "#7d69cb",
+      "isPrivate": false,
+      "metaSortKey": 1734658200000,
+      "_type": "environment"
+    },
+    {
+      "_id": "env_production",
+      "parentId": "wrk_frigate_automated",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "Production Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002",
+        "frigate_db": "10.0.20.6:5433",
+        "video_server": "http://10.0.20.6:8000"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "frigate_db",
+          "video_server"
+        ]
+      },
+      "color": "#7d69cb",
+      "isPrivate": false,
+      "metaSortKey": 1734658200001,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_foundation",
+      "parentId": "wrk_frigate_automated",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "1. Foundation APIs",
+      "description": "Basic health and info endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734658200000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_health_check",
+      "parentId": "fld_foundation",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/health",
+      "name": "1.1 Health Check",
+      "description": "Test PostgreSQL connection and service health",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_root_endpoint",
+      "parentId": "fld_foundation",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/",
+      "name": "1.2 Root Endpoint",
+      "description": "Get API information and metadata",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658199000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_api_info",
+      "parentId": "fld_foundation",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/info",
+      "name": "1.3 API Info",
+      "description": "Get detailed API configuration and features",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658198000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_cameras",
+      "parentId": "wrk_frigate_automated",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "2. Camera APIs",
+      "description": "Camera listing and management",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734658197000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_cameras_list",
+      "parentId": "fld_cameras",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/cameras/list",
+      "name": "2.1 Cameras List",
+      "description": "Get list of all available cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658197000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_media",
+      "parentId": "wrk_frigate_automated",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "3. Media APIs",
+      "description": "Video recordings and clips with streaming URLs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734658196000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_recent_recordings_all",
+      "parentId": "fld_media",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/recordings",
+      "name": "3.1 Recent Recordings (All)",
+      "description": "Get recent recordings from all cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum number of recordings"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658196000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_recent_recordings_filtered",
+      "parentId": "fld_media",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/recordings",
+      "name": "3.2 Recent Recordings (Filtered)",
+      "description": "Get recent recordings from specific camera",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "camera",
+          "value": "employees_01",
+          "description": "Camera name filter"
+        },
+        {
+          "name": "limit",
+          "value": "3",
+          "description": "Maximum number of recordings"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658195000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_recent_clips_all",
+      "parentId": "fld_media",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/clips",
+      "name": "3.3 Recent Clips (All)",
+      "description": "Get recent clips from all cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "5",
+          "description": "Maximum number of clips"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658194000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_recent_clips_filtered",
+      "parentId": "fld_media",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/clips",
+      "name": "3.4 Recent Clips (Filtered)",
+      "description": "Get recent clips from specific camera",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "camera",
+          "value": "employees_04",
+          "description": "Camera name filter"
+        },
+        {
+          "name": "limit",
+          "value": "3",
+          "description": "Maximum number of clips"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658193000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_test_media_general",
+      "parentId": "fld_media",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/test-media",
+      "name": "3.5 Test Media URLs (General)",
+      "description": "Test media URL accessibility with recent data",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658192000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_test_media_clip",
+      "parentId": "fld_media",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/test-media",
+      "name": "3.6 Test Media URLs (Specific Clip)",
+      "description": "Test specific clip ID media URL",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "clip_id",
+          "value": "1760915764.052192-k1dp3s",
+          "description": "Specific clip ID to test"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658191000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_test_media_recording",
+      "parentId": "fld_media",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/api/recent-media/test-media",
+      "name": "3.7 Test Media URLs (Specific Recording)",
+      "description": "Test specific recording ID media URL",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "recording_id",
+          "value": "1760915899.0-teptn7",
+          "description": "Specific recording ID to test"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658190000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_media_proxy",
+      "parentId": "wrk_frigate_automated",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "4. Media Proxy Tests",
+      "description": "Direct media file streaming tests",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734658189000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_media_proxy_video",
+      "parentId": "fld_media_proxy",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/media/recordings/2025-10-19/23/employees_02/18.19.mp4",
+      "name": "4.1 Video Stream Test",
+      "description": "Test video streaming through media proxy",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "video/mp4, video/*, */*"
+        },
+        {
+          "name": "Range",
+          "value": "bytes=0-1023",
+          "description": "Test range requests for video streaming"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658189000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_media_proxy_thumbnail",
+      "parentId": "fld_media_proxy",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/media/clips/review/thumb-employees_04-1760915764.052192-k1dp3s.webp",
+      "name": "4.2 Thumbnail Image Test",
+      "description": "Test thumbnail image through media proxy",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "image/webp, image/*, */*"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658188000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_automated_tests",
+      "parentId": "wrk_frigate_automated",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "name": "5. Automated Test Suite",
+      "description": "Run all tests automatically",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1734658187000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_run_all_tests",
+      "parentId": "fld_automated_tests",
+      "modified": 1734658200000,
+      "created": 1734658200000,
+      "url": "{{ _.base_url }}/v1/health",
+      "name": "5.1 Run All Tests",
+      "description": "Execute all Phase 1 tests in sequence",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1734658187000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    }
+  ]
+}
