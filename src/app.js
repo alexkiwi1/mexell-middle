@@ -17,6 +17,7 @@ const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const websocketService = require('./services/websocket.service');
+const performanceService = require('./services/performance.service');
 
 const app = express();
 const server = createServer(app);
@@ -111,6 +112,21 @@ app.use('/media', createProxyMiddleware({
     });
   }
 }));
+
+// Performance monitoring middleware
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  
+  // Override res.end to capture response time
+  const originalEnd = res.end;
+  res.end = function(...args) {
+    const responseTime = Date.now() - startTime;
+    performanceService.recordRequest(req.method, req.path, responseTime, res.statusCode);
+    originalEnd.apply(this, args);
+  };
+  
+  next();
+});
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {

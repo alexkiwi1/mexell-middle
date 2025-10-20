@@ -10,6 +10,8 @@ const employeesRoute = require('./employees.route');
 const zonesRoute = require('./zones.route');
 const analyticsRoute = require('./analytics.route');
 const websocketRoute = require('./websocket.route');
+const mobileRoute = require('./mobile.route');
+const performanceRoute = require('./performance.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -55,6 +57,14 @@ const defaultRoutes = [
       {
         path: '/',
         route: websocketRoute,
+      },
+      {
+        path: '/',
+        route: mobileRoute,
+      },
+      {
+        path: '/',
+        route: performanceRoute,
       },
     ];
 
