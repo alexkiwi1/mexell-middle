@@ -5,6 +5,7 @@ const docsRoute = require('./docs.route');
 const healthRoute = require('./health.route');
 const camerasRoute = require('./cameras.route');
 const mediaRoute = require('./media.route');
+const frigateRoute = require('./frigate.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -30,6 +31,10 @@ const defaultRoutes = [
   {
     path: '/',
     route: mediaRoute,
+  },
+  {
+    path: '/',
+    route: frigateRoute,
   },
 ];
 

@@ -5,10 +5,152 @@ const swaggerDefinition = require('../../docs/swaggerDef');
 
 const router = express.Router();
 
-const specs = swaggerJsdoc({
-  swaggerDefinition,
-  apis: ['src/docs/*.yml', 'src/routes/v1/*.js'],
-});
+// Create a simple working Swagger spec
+const specs = {
+  ...swaggerDefinition,
+  paths: {
+    '/health': {
+      get: {
+        summary: 'Health Check',
+        description: 'Check API health and database connectivity',
+        tags: ['Frigate Surveillance'],
+        responses: {
+          200: {
+            description: 'API is healthy',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'All services healthy' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        status: { type: 'string', example: 'healthy' },
+                        timestamp: { type: 'string', format: 'date-time' },
+                        uptime: { type: 'number', example: 450.67 },
+                        responseTime: { type: 'string', example: '1013ms' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/cameras': {
+      get: {
+        summary: 'List All Cameras',
+        description: 'Get list of all available cameras',
+        tags: ['Frigate Surveillance'],
+        responses: {
+          200: {
+            description: 'Cameras retrieved successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Cameras retrieved successfully' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        cameras: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              name: { type: 'string', example: 'employees_01' },
+                              status: { type: 'string', example: 'active' },
+                              resolution: { type: 'string', example: '3840x2160' },
+                              fps: { type: 'number', example: 8 }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/cameras/summary': {
+      get: {
+        summary: 'Camera Summary (All)',
+        description: 'Get summary of all cameras with activity metrics',
+        tags: ['Frigate Surveillance'],
+        parameters: [
+          {
+            in: 'query',
+            name: 'start_date',
+            schema: { type: 'string', format: 'date' },
+            description: 'Start date (YYYY-MM-DD)',
+            example: '2025-10-02'
+          },
+          {
+            in: 'query',
+            name: 'end_date',
+            schema: { type: 'string', format: 'date' },
+            description: 'End date (YYYY-MM-DD)',
+            example: '2025-10-02'
+          },
+          {
+            in: 'query',
+            name: 'hours',
+            schema: { type: 'integer', default: 24 },
+            description: 'Hours to look back (fallback if no dates)',
+            example: 24
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Camera summary retrieved successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Camera summary retrieved successfully' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        cameras: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              name: { type: 'string', example: 'employees_01' },
+                              status: { type: 'string', example: 'active' },
+                              violations: { type: 'integer', example: 15 },
+                              activity: { type: 'integer', example: 42 },
+                              lastSeen: { type: 'string', format: 'date-time', example: '2025-10-02T16:31:49.907Z' }
+                            }
+                          }
+                        },
+                        totalCameras: { type: 'integer', example: 12 },
+                        totalViolations: { type: 'integer', example: 156 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+console.log('Swagger specs generated with', Object.keys(specs.paths || {}).length, 'paths');
 
 router.use('/', swaggerUi.serve);
 router.get(
@@ -17,5 +159,11 @@ router.get(
     explorer: true,
   })
 );
+
+// Serve the JSON specification
+router.get('/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(specs);
+});
 
 module.exports = router;

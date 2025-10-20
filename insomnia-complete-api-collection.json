@@ -1,0 +1,508 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-20T02:58:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_health_check",
+      "parentId": "fld_health",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/health",
+      "name": "Health Check",
+      "description": "Check API health and database connectivity",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Health check pre-request script\nconsole.log('Checking API health...');\nconsole.log('Base URL:', _.base_url);",
+      "testScript": "// Health check test script\nconst response = await response.json();\n\n// Test API health\nif (response.success) {\n    console.log('✅ API is healthy');\n    console.log('Status:', response.data.status);\n    console.log('Uptime:', response.data.uptime + 's');\n    console.log('Response Time:', response.data.responseTime);\n    \n    // Test database connectivity\n    if (response.data.services.frigate_database.status === 'healthy') {\n        console.log('✅ Frigate database is connected');\n    } else {\n        console.log('❌ Frigate database connection failed');\n    }\n    \n    // Set environment variables for other tests\n    _.api_healthy = true;\n    _.response_time = response.data.responseTime;\n} else {\n    console.log('❌ API health check failed');\n    console.log('Error:', response.message);\n    _.api_healthy = false;\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data.status).to.equal('healthy');\nexpect(response.data.services.frigate_database.status).to.equal('healthy');"
+    },
+    {
+      "_id": "req_cameras_list",
+      "parentId": "fld_cameras",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/cameras",
+      "name": "List All Cameras",
+      "description": "Get list of all available cameras",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Cameras list pre-request script\nconsole.log('Fetching camera list...');",
+      "testScript": "// Cameras list test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Cameras retrieved successfully');\n    console.log('Total cameras:', response.data.cameras.length);\n    \n    // Log camera details\n    response.data.cameras.forEach((camera, index) => {\n        console.log(`${index + 1}. ${camera.name} - ${camera.status}`);\n    });\n    \n    // Store cameras for other tests\n    _.cameras = response.data.cameras;\n    _.first_camera = response.data.cameras[0]?.name;\n} else {\n    console.log('❌ Failed to retrieve cameras');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data.cameras).to.be.an('array');\nexpect(response.data.cameras.length).to.be.greaterThan(0);"
+    },
+    {
+      "_id": "req_cameras_summary",
+      "parentId": "fld_cameras",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/cameras/summary",
+      "name": "Camera Summary (All)",
+      "description": "Get summary of all cameras with activity metrics",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-02",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-02",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back (fallback if no dates)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Camera summary pre-request script\nconsole.log('Fetching camera summary...');\nconsole.log('Date range:', _.start_date, 'to', _.end_date);",
+      "testScript": "// Camera summary test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Camera summary retrieved successfully');\n    console.log('Total cameras:', response.data.cameras.length);\n    \n    // Test each camera summary\n    response.data.cameras.forEach((camera, index) => {\n        console.log(`\\nCamera ${index + 1}: ${camera.name}`);\n        console.log(`  Status: ${camera.status}`);\n        console.log(`  Violations: ${camera.violations}`);\n        console.log(`  Activity: ${camera.activity}`);\n        console.log(`  Last Seen: ${camera.lastSeen}`);\n    });\n    \n    // Store summary data\n    _.camera_summary = response.data;\n} else {\n    console.log('❌ Failed to retrieve camera summary');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data.cameras).to.be.an('array');\nexpect(response.data.cameras.length).to.be.greaterThan(0);\n\n// Test camera object structure\nconst firstCamera = response.data.cameras[0];\nexpect(firstCamera).to.have.property('name');\nexpect(firstCamera).to.have.property('status');\nexpect(firstCamera).to.have.property('violations');\nexpect(firstCamera).to.have.property('activity');"
+    },
+    {
+      "_id": "req_camera_summary_single",
+      "parentId": "fld_cameras",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/cameras/{{ _.first_camera || 'employees_01' }}/summary",
+      "name": "Camera Summary (Single)",
+      "description": "Get detailed summary for a specific camera",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-02",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-02",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "hours",
+          "value": "24",
+          "description": "Hours to look back (fallback if no dates)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Single camera summary pre-request script\nconst camera = _.first_camera || 'employees_01';\nconsole.log('Fetching summary for camera:', camera);",
+      "testScript": "// Single camera summary test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Camera summary retrieved successfully');\n    console.log('Camera:', response.data.camera);\n    console.log('Status:', response.data.status);\n    console.log('Violations:', response.data.violations);\n    console.log('Activity:', response.data.activity);\n    console.log('Last Seen:', response.data.lastSeen);\n    \n    // Test detailed metrics\n    if (response.data.metrics) {\n        console.log('\\nDetailed Metrics:');\n        console.log('  Total Events:', response.data.metrics.totalEvents);\n        console.log('  Violation Rate:', response.data.metrics.violationRate);\n        console.log('  Activity Level:', response.data.metrics.activityLevel);\n    }\n    \n    // Store single camera data\n    _.single_camera_data = response.data;\n} else {\n    console.log('❌ Failed to retrieve camera summary');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data).to.have.property('camera');\nexpect(response.data).to.have.property('status');\nexpect(response.data).to.have.property('violations');\nexpect(response.data).to.have.property('activity');"
+    },
+    {
+      "_id": "req_camera_activity",
+      "parentId": "fld_cameras",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/cameras/{{ _.first_camera || 'employees_01' }}/activity",
+      "name": "Camera Activity Feed",
+      "description": "Get real-time activity feed for a specific camera",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-02",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-02",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "description": "Number of activities to return"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Camera activity pre-request script\nconst camera = _.first_camera || 'employees_01';\nconsole.log('Fetching activity for camera:', camera);",
+      "testScript": "// Camera activity test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Camera activity retrieved successfully');\n    console.log('Camera:', response.data.camera);\n    console.log('Total activities:', response.data.activities.length);\n    \n    // Test activity data structure\n    response.data.activities.slice(0, 5).forEach((activity, index) => {\n        console.log(`\\nActivity ${index + 1}:`);\n        console.log(`  Timestamp: ${activity.timestamp}`);\n        console.log(`  Type: ${activity.type}`);\n        console.log(`  Label: ${activity.label}`);\n        console.log(`  Confidence: ${activity.confidence}`);\n        if (activity.zones) {\n            console.log(`  Zones: ${activity.zones.join(', ')}`);\n        }\n    });\n    \n    // Store activity data\n    _.camera_activities = response.data.activities;\n} else {\n    console.log('❌ Failed to retrieve camera activity');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data.activities).to.be.an('array');\nexpect(response.data.camera).to.be.a('string');\n\n// Test activity object structure\nif (response.data.activities.length > 0) {\n    const firstActivity = response.data.activities[0];\n    expect(firstActivity).to.have.property('timestamp');\n    expect(firstActivity).to.have.property('type');\n    expect(firstActivity).to.have.property('label');\n}"
+    },
+    {
+      "_id": "req_camera_status",
+      "parentId": "fld_cameras",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/cameras/{{ _.first_camera || 'employees_01' }}/status",
+      "name": "Camera Status",
+      "description": "Get detailed status information for a specific camera",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Camera status pre-request script\nconst camera = _.first_camera || 'employees_01';\nconsole.log('Fetching status for camera:', camera);",
+      "testScript": "// Camera status test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Camera status retrieved successfully');\n    console.log('Camera:', response.data.camera);\n    console.log('Status:', response.data.status);\n    console.log('Online:', response.data.online);\n    console.log('Last Activity:', response.data.lastActivity);\n    \n    // Test detailed status\n    if (response.data.details) {\n        console.log('\\nDetailed Status:');\n        console.log('  Resolution:', response.data.details.resolution);\n        console.log('  FPS:', response.data.details.fps);\n        console.log('  Uptime:', response.data.details.uptime);\n    }\n    \n    // Store status data\n    _.camera_status = response.data;\n} else {\n    console.log('❌ Failed to retrieve camera status');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data).to.have.property('camera');\nexpect(response.data).to.have.property('status');\nexpect(response.data).to.have.property('online');"
+    },
+    {
+      "_id": "req_camera_violations",
+      "parentId": "fld_cameras",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/cameras/{{ _.first_camera || 'employees_01' }}/violations",
+      "name": "Camera Violations",
+      "description": "Get cell phone violations for a specific camera",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-02",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-02",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "limit",
+          "value": "10",
+          "description": "Number of violations to return"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Camera violations pre-request script\nconst camera = _.first_camera || 'employees_01';\nconsole.log('Fetching violations for camera:', camera);",
+      "testScript": "// Camera violations test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Camera violations retrieved successfully');\n    console.log('Camera:', response.data.camera);\n    console.log('Total violations:', response.data.violations.length);\n    \n    // Test violation data structure\n    response.data.violations.slice(0, 3).forEach((violation, index) => {\n        console.log(`\\nViolation ${index + 1}:`);\n        console.log(`  Timestamp: ${violation.timestamp}`);\n        console.log(`  Assigned Employee: ${violation.assignedEmployee}`);\n        console.log(`  Assignment Method: ${violation.assignmentMethod}`);\n        console.log(`  Confidence: ${violation.assignmentConfidence}`);\n        console.log(`  Zones: ${violation.zones.join(', ')}`);\n        \n        // Test media URLs\n        if (violation.media) {\n            console.log(`  Media URLs:`);\n            console.log(`    Snapshot: ${violation.media.snapshot_url}`);\n            console.log(`    Video: ${violation.media.video_file_url}`);\n            console.log(`    Clips: ${violation.media.clips_url}`);\n        }\n    });\n    \n    // Store violations data\n    _.camera_violations = response.data.violations;\n} else {\n    console.log('❌ Failed to retrieve camera violations');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data.violations).to.be.an('array');\nexpect(response.data.camera).to.be.a('string');\n\n// Test violation object structure\nif (response.data.violations.length > 0) {\n    const firstViolation = response.data.violations[0];\n    expect(firstViolation).to.have.property('timestamp');\n    expect(firstViolation).to.have.property('assignedEmployee');\n    expect(firstViolation).to.have.property('assignmentMethod');\n    expect(firstViolation).to.have.property('media');\n}"
+    },
+    {
+      "_id": "req_violations_summary",
+      "parentId": "fld_violations",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/violations/summary",
+      "name": "Violations Summary",
+      "description": "Get summary of all employee violations",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-02",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-02",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "limit",
+          "value": "50",
+          "description": "Number of employees to return"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Violations summary pre-request script\nconsole.log('Fetching violations summary...');",
+      "testScript": "// Violations summary test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Violations summary retrieved successfully');\n    console.log('Total employees:', response.data.employees.length);\n    console.log('Total violations:', response.data.totalViolations);\n    \n    // Test employee violation data\n    response.data.employees.slice(0, 5).forEach((employee, index) => {\n        console.log(`\\nEmployee ${index + 1}: ${employee.name}`);\n        console.log(`  Violations: ${employee.violations}`);\n        console.log(`  Last Violation: ${employee.lastViolation}`);\n        console.log(`  Assignment Method: ${employee.assignmentMethod}`);\n    });\n    \n    // Store summary data\n    _.violations_summary = response.data;\n} else {\n    console.log('❌ Failed to retrieve violations summary');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data.employees).to.be.an('array');\nexpect(response.data).to.have.property('totalViolations');\n\n// Test employee object structure\nif (response.data.employees.length > 0) {\n    const firstEmployee = response.data.employees[0];\n    expect(firstEmployee).to.have.property('name');\n    expect(firstEmployee).to.have.property('violations');\n    expect(firstEmployee).to.have.property('lastViolation');\n}"
+    },
+    {
+      "_id": "req_employee_violations",
+      "parentId": "fld_violations",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/violations/employee/{{ _.employee_name || 'Muhammad Taha' }}",
+      "name": "Employee Violations",
+      "description": "Get violations for a specific employee",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "2025-10-02",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "2025-10-02",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "description": "Number of violations to return"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Employee violations pre-request script\nconst employee = _.employee_name || 'Muhammad Taha';\nconsole.log('Fetching violations for employee:', employee);",
+      "testScript": "// Employee violations test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Employee violations retrieved successfully');\n    console.log('Employee:', response.data.employee);\n    console.log('Total violations:', response.data.violations.length);\n    \n    // Test violation data structure\n    response.data.violations.slice(0, 3).forEach((violation, index) => {\n        console.log(`\\nViolation ${index + 1}:`);\n        console.log(`  Timestamp: ${violation.timestamp}`);\n        console.log(`  Camera: ${violation.camera}`);\n        console.log(`  Assignment Method: ${violation.assignmentMethod}`);\n        console.log(`  Confidence: ${violation.assignmentConfidence}`);\n        console.log(`  Zones: ${violation.zones.join(', ')}`);\n        \n        // Test media URLs\n        if (violation.media) {\n            console.log(`  Media URLs:`);\n            console.log(`    Snapshot: ${violation.media.snapshot_url}`);\n            console.log(`    Video: ${violation.media.video_file_url}`);\n            console.log(`    Clips: ${violation.media.clips_url}`);\n        }\n    });\n    \n    // Store employee violations data\n    _.employee_violations = response.data.violations;\n} else {\n    console.log('❌ Failed to retrieve employee violations');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data.violations).to.be.an('array');\nexpect(response.data.employee).to.be.a('string');\n\n// Test violation object structure\nif (response.data.violations.length > 0) {\n    const firstViolation = response.data.violations[0];\n    expect(firstViolation).to.have.property('timestamp');\n    expect(firstViolation).to.have.property('camera');\n    expect(firstViolation).to.have.property('assignedEmployee');\n    expect(firstViolation).to.have.property('media');\n}"
+    },
+    {
+      "_id": "req_violation_media",
+      "parentId": "fld_violations",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/violations/media/{{ _.violation_id || '1759422600.60731-ibtg42' }}/{{ _.camera || 'employees_01' }}/{{ _.timestamp || '1759422709' }}",
+      "name": "Violation Media URLs",
+      "description": "Get media URLs for a specific violation",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Violation media pre-request script\nconst violationId = _.violation_id || '1759422600.60731-ibtg42';\nconst camera = _.camera || 'employees_01';\nconst timestamp = _.timestamp || '1759422709';\nconsole.log('Fetching media for violation:', violationId);\nconsole.log('Camera:', camera, 'Timestamp:', timestamp);",
+      "testScript": "// Violation media test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Violation media retrieved successfully');\n    console.log('Violation ID:', response.data.violation_id);\n    console.log('Camera:', response.data.camera);\n    console.log('Timestamp:', response.data.timestamp);\n    \n    // Test media URLs\n    console.log('\\nMedia URLs:');\n    console.log('  Snapshot:', response.data.snapshot_url);\n    console.log('  Clean Snapshot:', response.data.clean_snapshot_url);\n    console.log('  Thumbnail:', response.data.thumbnail_url);\n    console.log('  Video File:', response.data.video_file_url);\n    console.log('  Recording Folder:', response.data.recording_url);\n    console.log('  Clips Folder:', response.data.clips_url);\n    \n    // Test URL accessibility (optional)\n    if (response.data.snapshot_url) {\n        console.log('\\nTesting URL accessibility...');\n        // Note: This would require additional HTTP requests\n        console.log('  Snapshot URL ready for testing');\n    }\n    \n    // Store media data\n    _.violation_media = response.data;\n} else {\n    console.log('❌ Failed to retrieve violation media');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;\nexpect(response.data).to.have.property('violation_id');\nexpect(response.data).to.have.property('camera');\nexpect(response.data).to.have.property('timestamp');\nexpect(response.data).to.have.property('snapshot_url');\nexpect(response.data).to.have.property('video_file_url');"
+    },
+    {
+      "_id": "req_clear_cache",
+      "parentId": "fld_utilities",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "url": "{{ _.base_url }}/v1/api/cameras/cache",
+      "name": "Clear Camera Cache",
+      "description": "Clear camera data cache",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737341880000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "preRequestScript": "// Clear cache pre-request script\nconsole.log('Clearing camera cache...');",
+      "testScript": "// Clear cache test script\nconst response = await response.json();\n\nif (response.success) {\n    console.log('✅ Camera cache cleared successfully');\n    console.log('Message:', response.message);\n} else {\n    console.log('❌ Failed to clear camera cache');\n    console.log('Error:', response.message);\n}\n\n// Assertions\nexpect(response.success).to.be.true;"
+    },
+    {
+      "_id": "fld_health",
+      "parentId": "wrk_main",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "name": "Health & Status",
+      "description": "API health and status endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737341880000
+    },
+    {
+      "_id": "fld_cameras",
+      "parentId": "wrk_main",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "name": "Camera Management",
+      "description": "Camera monitoring and management endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737341880000
+    },
+    {
+      "_id": "fld_violations",
+      "parentId": "wrk_main",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "name": "Violations & Employees",
+      "description": "Employee violation tracking and management",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737341880000
+    },
+    {
+      "_id": "fld_utilities",
+      "parentId": "wrk_main",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "name": "Utilities",
+      "description": "Utility endpoints for cache management",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737341880000
+    },
+    {
+      "_id": "wrk_main",
+      "parentId": null,
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "name": "Frigate Surveillance Middleware API",
+      "description": "Complete API collection for Frigate surveillance middleware with comprehensive testing",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_main",
+      "modified": 1737341880000,
+      "created": 1737341880000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002",
+        "api_version": "v1",
+        "employee_name": "Muhammad Taha",
+        "camera_name": "employees_01",
+        "violation_id": "1759422600.60731-ibtg42",
+        "timestamp": "1759422709",
+        "start_date": "2025-10-02",
+        "end_date": "2025-10-02"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "api_version",
+          "employee_name",
+          "camera_name",
+          "violation_id",
+          "timestamp",
+          "start_date",
+          "end_date"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": -1737341880000
+    }
+  ]
+}
