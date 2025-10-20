@@ -495,7 +495,7 @@ const getEmployeeSummary = async (startTime, endTime, camera) => {
       COUNT(*) as activity_count,
       MIN(timestamp) as first_seen,
       MAX(timestamp) as last_seen,
-      EXTRACT(EPOCH FROM (MAX(timestamp) - MIN(timestamp))) / 3600 as work_hours
+      EXTRACT(EPOCH FROM (MAX(to_timestamp(timestamp)) - MIN(to_timestamp(timestamp)))) / 3600 as work_hours
     FROM timeline
     ${whereClause}
     GROUP BY data->'sub_label'->>0
