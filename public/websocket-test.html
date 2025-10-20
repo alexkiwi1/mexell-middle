@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frigate WebSocket Test Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        .subscription {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .event-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        .event-type {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .event-time {
+            font-size: 11px;
+            color: #6c757d;
+        }
+        .event-data {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #495057;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Frigate WebSocket Test Client</h1>
+        <div id="status" class="status disconnected">Disconnected</div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="clientCount">0</div>
+                <div class="stat-label">Connected Clients</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="subscriptionCount">0</div>
+                <div class="stat-label">Active Subscriptions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="eventCount">0</div>
+                <div class="stat-label">Events Received</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="connectBtn" class="btn-primary">Connect</button>
+            <button id="disconnectBtn" class="btn-danger" disabled>Disconnect</button>
+            <button id="testBtn" class="btn-warning" disabled>Send Test Event</button>
+            <button id="clearBtn" class="btn-secondary">Clear Log</button>
+        </div>
+
+        <div class="controls">
+            <label>Subscribe to:</label>
+            <select id="eventType">
+                <option value="violations">Violations</option>
+                <option value="employee_activity">Employee Activity</option>
+                <option value="camera_activity">Camera Activity</option>
+                <option value="zone_activity">Zone Activity</option>
+            </select>
+            <button id="subscribeBtn" class="btn-success" disabled>Subscribe</button>
+            <button id="unsubscribeBtn" class="btn-warning" disabled>Unsubscribe All</button>
+        </div>
+
+        <div>
+            <h3>Active Subscriptions</h3>
+            <div id="subscriptions"></div>
+        </div>
+
+        <div>
+            <h3>Event Log</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = null;
+        let eventCount = 0;
+        let subscriptions = new Set();
+
+        const statusEl = document.getElementById('status');
+        const clientCountEl = document.getElementById('clientCount');
+        const subscriptionCountEl = document.getElementById('subscriptionCount');
+        const eventCountEl = document.getElementById('eventCount');
+        const logEl = document.getElementById('log');
+        const subscriptionsEl = document.getElementById('subscriptions');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const testBtn = document.getElementById('testBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const subscribeBtn = document.getElementById('subscribeBtn');
+        const unsubscribeBtn = document.getElementById('unsubscribeBtn');
+        const eventTypeSelect = document.getElementById('eventType');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            logEl.textContent += logMessage;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function updateStats() {
+            clientCountEl.textContent = socket ? '1' : '0';
+            subscriptionCountEl.textContent = subscriptions.size;
+            eventCountEl.textContent = eventCount;
+        }
+
+        function updateSubscriptions() {
+            subscriptionsEl.innerHTML = '';
+            subscriptions.forEach(sub => {
+                const div = document.createElement('div');
+                div.className = 'subscription';
+                div.innerHTML = `
+                    <span>${sub}</span>
+                    <button onclick="unsubscribe('${sub}')" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">Remove</button>
+                `;
+                subscriptionsEl.appendChild(div);
+            });
+        }
+
+        function connect() {
+            if (socket) return;
+
+            log('Connecting to WebSocket server...');
+            socket = io('http://10.100.6.2:5002', {
+                path: '/socket.io'
+            });
+
+            socket.on('connect', () => {
+                log('✅ Connected to WebSocket server', 'success');
+                statusEl.textContent = 'Connected';
+                statusEl.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                testBtn.disabled = false;
+                subscribeBtn.disabled = false;
+                unsubscribeBtn.disabled = false;
+                updateStats();
+            });
+
+            socket.on('disconnect', () => {
+                log('❌ Disconnected from WebSocket server', 'error');
+                statusEl.textContent = 'Disconnected';
+                statusEl.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                testBtn.disabled = true;
+                subscribeBtn.disabled = true;
+                unsubscribeBtn.disabled = true;
+                updateStats();
+            });
+
+            socket.on('realtime_event', (data) => {
+                eventCount++;
+                log(`📡 Received ${data.events.length} ${data.eventType} events`, 'info');
+                
+                data.events.forEach(event => {
+                    const eventDiv = document.createElement('div');
+                    eventDiv.className = 'event-item';
+                    eventDiv.innerHTML = `
+                        <div class="event-type">${event.type} - ${event.event}</div>
+                        <div class="event-time">${new Date(event.data.timestamp).toLocaleString()}</div>
+                        <div class="event-data">${JSON.stringify(event.data, null, 2)}</div>
+                    `;
+                    logEl.appendChild(eventDiv);
+                });
+                
+                updateStats();
+            });
+
+            socket.on('custom_event', (data) => {
+                eventCount++;
+                log(`🎯 Custom event: ${data.eventType}`, 'info');
+                log(`Data: ${JSON.stringify(data.data, null, 2)}`, 'info');
+                updateStats();
+            });
+
+            socket.on('subscribed', (data) => {
+                log(`✅ Subscribed to ${data.eventType}`, 'success');
+                subscriptions.add(`${data.eventType}_${JSON.stringify(data.filters)}`);
+                updateSubscriptions();
+                updateStats();
+            });
+
+            socket.on('unsubscribed', (data) => {
+                log(`❌ Unsubscribed from ${data.eventType}`, 'info');
+                subscriptions.delete(`${data.eventType}_${JSON.stringify(data.filters)}`);
+                updateSubscriptions();
+                updateStats();
+            });
+
+            socket.on('pong', (data) => {
+                log(`🏓 Pong received (latency: ${Date.now() - data.timestamp}ms)`, 'info');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                subscriptions.clear();
+                updateSubscriptions();
+                updateStats();
+            }
+        }
+
+        function sendTestEvent() {
+            if (socket) {
+                socket.emit('ping');
+                log('🏓 Ping sent', 'info');
+            }
+        }
+
+        function subscribe() {
+            if (socket) {
+                const eventType = eventTypeSelect.value;
+                const filters = {};
+                
+                socket.emit('subscribe', { eventType, filters });
+                log(`Subscribing to ${eventType}...`, 'info');
+            }
+        }
+
+        function unsubscribe(subscriptionKey) {
+            if (socket) {
+                const [eventType, filtersStr] = subscriptionKey.split('_');
+                const filters = JSON.parse(filtersStr);
+                
+                socket.emit('unsubscribe', { eventType, filters });
+                log(`Unsubscribing from ${eventType}...`, 'info');
+            }
+        }
+
+        function unsubscribeAll() {
+            if (socket) {
+                subscriptions.forEach(subscriptionKey => {
+                    unsubscribe(subscriptionKey);
+                });
+            }
+        }
+
+        function clearLog() {
+            logEl.textContent = '';
+            eventCount = 0;
+            updateStats();
+        }
+
+        // Event listeners
+        connectBtn.addEventListener('click', connect);
+        disconnectBtn.addEventListener('click', disconnect);
+        testBtn.addEventListener('click', sendTestEvent);
+        clearBtn.addEventListener('click', clearLog);
+        subscribeBtn.addEventListener('click', subscribe);
+        unsubscribeBtn.addEventListener('click', unsubscribeAll);
+
+        // Initialize
+        updateStats();
+        log('WebSocket Test Client Ready. Click Connect to start.', 'info');
+    </script>
+</body>
+</html>

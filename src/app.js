@@ -7,6 +7,8 @@ const cors = require('cors');
 const passport = require('passport');
 const httpStatus = require('http-status');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
@@ -14,8 +16,22 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const websocketService = require('./services/websocket.service');
 
 const app = express();
+const server = createServer(app);
+
+// Initialize Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  },
+  path: '/socket.io'
+});
+
+// Initialize WebSocket service
+websocketService.initialize(io);
 
 if (config.env !== 'test') {
   app.use(morgan.successHandler);
@@ -53,6 +69,9 @@ if (config.env === 'production') {
 
 // v1 api routes
 app.use('/v1', routes);
+
+// Serve static files from public directory
+app.use(express.static('public'));
 
 // Frigate media proxy - proxy video files to Frigate server
 app.use('/media', createProxyMiddleware({
@@ -104,4 +123,4 @@ app.use(errorConverter);
 // handle error
 app.use(errorHandler);
 
-module.exports = app;
+module.exports = { app, server, io };

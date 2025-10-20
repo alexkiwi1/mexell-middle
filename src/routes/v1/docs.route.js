@@ -306,6 +306,116 @@ const specs = {
           }
         }
       }
+    },
+    '/api/websocket/stats': {
+      get: {
+        summary: 'Get WebSocket connection statistics',
+        description: 'Retrieve current WebSocket connection statistics including client count, subscriptions, and polling status',
+        tags: ['WebSocket'],
+        responses: {
+          200: {
+            description: 'WebSocket statistics retrieved successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        totalClients: { type: 'integer' },
+                        totalSubscriptions: { type: 'integer' },
+                        activeSubscriptions: { type: 'array', items: { type: 'string' } },
+                        lastPollTime: { type: 'number' },
+                        isPolling: { type: 'boolean' },
+                        timestamp: { type: 'string', format: 'date-time' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/websocket/activity': {
+      get: {
+        summary: 'Get real-time activity summary',
+        description: 'Get a summary of recent activity including violations, employee activity, and camera status',
+        tags: ['WebSocket'],
+        parameters: [
+          {
+            name: 'hours',
+            in: 'query',
+            schema: { type: 'integer', default: 1 },
+            description: 'Number of hours to look back for activity data'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Real-time activity data retrieved successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        timeRange: {
+                          type: 'object',
+                          properties: {
+                            start: { type: 'string', format: 'date-time' },
+                            end: { type: 'string', format: 'date-time' },
+                            hours: { type: 'integer' }
+                          }
+                        },
+                        violations: { type: 'array' },
+                        employeeActivity: { type: 'array' },
+                        cameraStatus: { type: 'array' },
+                        websocketStats: { type: 'object' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/websocket/test': {
+      post: {
+        summary: 'Test WebSocket connection',
+        description: 'Send a test event to all connected WebSocket clients to verify connectivity',
+        tags: ['WebSocket'],
+        responses: {
+          200: {
+            description: 'Test event sent successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    message: { type: 'string' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        timestamp: { type: 'string', format: 'date-time' },
+                        clients: { type: 'integer' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 };

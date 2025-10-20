@@ -9,6 +9,7 @@ const frigateRoute = require('./frigate.route');
 const employeesRoute = require('./employees.route');
 const zonesRoute = require('./zones.route');
 const analyticsRoute = require('./analytics.route');
+const websocketRoute = require('./websocket.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -47,11 +48,15 @@ const defaultRoutes = [
     path: '/',
     route: zonesRoute,
   },
-  {
-    path: '/',
-    route: analyticsRoute,
-  },
-];
+      {
+        path: '/',
+        route: analyticsRoute,
+      },
+      {
+        path: '/',
+        route: websocketRoute,
+      },
+    ];
 
 const devRoutes = [
   // routes available only in development mode
