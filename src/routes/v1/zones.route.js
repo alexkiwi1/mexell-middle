@@ -662,3 +662,4 @@ router.get('/api/zones/employee-preferences', zonesController.getEmployeeZonePre
 router.get('/api/zones/activity-patterns', zonesController.getZoneActivityPatternsController);
 
 module.exports = router;
+

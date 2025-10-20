@@ -116,3 +116,4 @@ All endpoints return the applied filters in the response:
 - **Fallback**: If no date parameters provided, defaults to 24 hours
 - **Validation**: Invalid dates will return error responses
 - **Limits**: Use `limit` parameter for large datasets
+

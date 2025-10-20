@@ -589,3 +589,4 @@ router.get('/api/mobile/sync', mobileController.getMobileSyncDataController);
 router.get('/api/mobile/settings', mobileController.getMobileSettingsController);
 
 module.exports = router;
+

@@ -884,3 +884,4 @@ router.get('/api/violations/media/:violation_id/:camera/:timestamp', camerasCont
 router.delete('/api/cameras/cache', camerasController.clearCameraCacheController);
 
 module.exports = router;
+

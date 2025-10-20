@@ -233,3 +233,4 @@ If you're still having issues:
 4. **Check firewall**: Make sure port 5002 is open
 
 The API is working correctly on the server - the issue is just using the right URL from your PC!
+

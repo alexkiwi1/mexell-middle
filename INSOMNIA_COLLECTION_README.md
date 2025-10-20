@@ -321,3 +321,4 @@ Most requests support these common parameters:
 This collection provides everything you need to thoroughly test the Frigate Middleware API. Start with the health check and work your way through the different categories to ensure all functionality is working correctly.
 
 **Happy Testing!** 🚀
+

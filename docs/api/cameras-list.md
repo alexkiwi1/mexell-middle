@@ -82,3 +82,4 @@ curl -v "http://localhost:5002/v1/api/cameras/list"
 - **500 Internal Server Error**: Database connection issues
 - **503 Service Unavailable**: Frigate database unreachable
 - Returns empty array if no cameras found (unlikely)
+

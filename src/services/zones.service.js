@@ -263,7 +263,7 @@ const getZoneUtilization = async (filters = {}) => {
     // Calculate utilization metrics
     const zones = Object.values(zoneData).map(zone => {
       const utilizationScore = calculateZoneUtilizationScore(zone);
-      const peakHours = findZonePeakHours(zone.entry_times);
+      const peakHours = findZonePeakHours(Array.isArray(zone.entry_times) ? zone.entry_times : []);
       const employeeDiversity = zone.unique_employees.size;
       
       return {
@@ -532,7 +532,7 @@ const getZoneActivityPatterns = async (filters = {}) => {
       
       return {
         ...zone,
-        peak_hours: findZonePeakHours(zone.hourly_patterns),
+        peak_hours: findZonePeakHours(Object.entries(zone.hourly_patterns || {}).map(([hour, count]) => ({ time_of_day: hour, count }))),
         peak_days: findZonePeakDays(zone.daily_patterns),
         activity_consistency: calculateActivityConsistency(hourlyValues),
         utilization_trends: analyzeUtilizationTrends(zone.hourly_patterns),
@@ -604,6 +604,10 @@ const calculateZoneUtilizationScore = (zone) => {
  * Find zone peak hours
  */
 const findZonePeakHours = (entryTimes) => {
+  if (!Array.isArray(entryTimes)) {
+    return [];
+  }
+  
   const hourlyCounts = {};
   entryTimes.forEach(entry => {
     hourlyCounts[entry.time_of_day] = (hourlyCounts[entry.time_of_day] || 0) + 1;

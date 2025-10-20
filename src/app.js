@@ -14,10 +14,17 @@ const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
-const { errorConverter, errorHandler } = require('./middlewares/error');
+const { errorConverter, errorHandler: mainErrorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const websocketService = require('./services/websocket.service');
 const performanceService = require('./services/performance.service');
+// Enhanced security and Redis imports
+const { 
+  helmetConfig, 
+  corsConfig, 
+  rateLimits
+} = require('./middleware/security');
+const { initRedis } = require('./config/redis');
 
 const app = express();
 const server = createServer(app);
@@ -31,6 +38,17 @@ const io = new Server(server, {
   path: '/socket.io'
 });
 
+// Initialize Redis
+initRedis().then(success => {
+  if (success) {
+    console.log('✅ Redis connected successfully');
+  } else {
+    console.log('⚠️  Redis connection failed, using memory cache fallback');
+  }
+}).catch(err => {
+  console.error('❌ Redis initialization error:', err);
+});
+
 // Initialize WebSocket service
 websocketService.initialize(io);
 
@@ -39,14 +57,16 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
-// set security HTTP headers
-app.use(helmet());
+// Enhanced security HTTP headers
+app.use(helmetConfig);
+
+// Request logging (using morgan)
 
 // parse json request body
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // parse urlencoded request body
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // sanitize request data
 app.use(xss());
@@ -55,9 +75,15 @@ app.use(mongoSanitize());
 // gzip compression
 app.use(compression());
 
-// enable cors
-app.use(cors());
-app.options('*', cors());
+// Enhanced CORS with security
+app.use(cors(corsConfig));
+app.options('*', cors(corsConfig));
+
+// Rate limiting
+app.use('/api', rateLimits.general);
+app.use('/api/violations', rateLimits.strict);
+app.use('/api/websocket/test', rateLimits.websocket);
+app.use('/api/media', rateLimits.media);
 
 // jwt authentication
 app.use(passport.initialize());
@@ -113,6 +139,17 @@ app.use('/media', createProxyMiddleware({
   }
 }));
 
+// Serve reports directory for downloadable files
+app.use('/api/reports/download', express.static('reports', {
+  setHeaders: (res, path) => {
+    // Set appropriate headers for file downloads
+    res.setHeader('Content-Disposition', 'attachment');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
+
 // Performance monitoring middleware
 app.use((req, res, next) => {
   const startTime = Date.now();
@@ -137,6 +174,6 @@ app.use((req, res, next) => {
 app.use(errorConverter);
 
 // handle error
-app.use(errorHandler);
+app.use(mainErrorHandler);
 
 module.exports = { app, server, io };

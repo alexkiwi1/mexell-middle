@@ -1,5 +1,14 @@
 const { query } = require('../config/postgres');
 const { unixToISO, unixToReadable, parseDateTimeRange } = require('./frigate.service');
+const { 
+  isValidTimezone, 
+  getTimezoneName, 
+  convertToISO, 
+  convertToReadable, 
+  getTimezoneInfo,
+  processEmployeeTimezone,
+  processBreakSessionsTimezone
+} = require('./timezone.service');
 const logger = require('../config/logger');
 
 /**
@@ -21,13 +30,18 @@ const logger = require('../config/logger');
  */
 const getEmployeeWorkHours = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, employee_name, camera } = filters;
+    const { start_date, end_date, hours, employee_name, camera, timezone = 'UTC' } = filters;
     const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    
+    // Validate timezone
+    if (!isValidTimezone(timezone)) {
+      throw new Error(`Invalid timezone: ${timezone}`);
+    }
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
-      AND class_type = 'entered_zone'
       AND data->>'label' = 'person'
+      AND data->'sub_label'->>0 IS NOT NULL
     `;
     const params = [startTime, endTime];
     let paramIndex = 3;
@@ -44,26 +58,26 @@ const getEmployeeWorkHours = async (filters = {}) => {
       paramIndex++;
     }
 
+    // Get all person detections for proper work hours calculation
     const sql = `
       SELECT
         data->'sub_label'->>0 as employee_name,
         camera,
         data->'zones' as zones,
-        MIN(timestamp) as first_seen,
-        MAX(timestamp) as last_seen,
-        COUNT(*) as activity_count,
-        (MAX(timestamp) - MIN(timestamp)) / 3600 as total_hours
+        timestamp,
+        data->>'score' as confidence
       FROM timeline
       ${whereClause}
-      GROUP BY data->'sub_label'->>0, camera, data->'zones'
-      ORDER BY first_seen DESC
+      ORDER BY data->'sub_label'->>0, timestamp
     `;
 
     const result = await query(sql, params);
+    logger.info(`Found ${result.length} person detections for work hours calculation`);
 
-    // Process and calculate work hours
+    // Process detections and calculate work hours properly
     const employeeData = {};
     
+    // Group detections by employee
     result.forEach(row => {
       const employee = row.employee_name || 'Unknown';
       if (!employeeData[employee]) {
@@ -75,34 +89,135 @@ const getEmployeeWorkHours = async (filters = {}) => {
           zones: new Set(),
           sessions: [],
           first_seen: null,
-          last_seen: null
+          last_seen: null,
+          detections: [] // Store all detections for proper calculation
         };
       }
 
-      const workHours = parseFloat(row.total_hours) || 0;
-      employeeData[employee].total_work_hours += workHours;
-      employeeData[employee].total_activity += parseInt(row.activity_count) || 0;
+      employeeData[employee].total_activity++;
       employeeData[employee].cameras.add(row.camera);
       
       if (row.zones) {
         row.zones.forEach(zone => employeeData[employee].zones.add(zone));
       }
 
-      employeeData[employee].sessions.push({
+      // Store detection data
+      employeeData[employee].detections.push({
+        timestamp: row.timestamp,
         camera: row.camera,
         zones: row.zones || [],
-        first_seen: unixToISO(row.first_seen),
-        last_seen: unixToISO(row.last_seen),
-        duration_hours: workHours,
-        activity_count: parseInt(row.activity_count) || 0
+        confidence: parseFloat(row.confidence) || 0
       });
 
-      if (!employeeData[employee].first_seen || row.first_seen < employeeData[employee].first_seen) {
-        employeeData[employee].first_seen = unixToISO(row.first_seen);
+      if (!employeeData[employee].first_seen || row.timestamp < employeeData[employee].first_seen) {
+        employeeData[employee].first_seen = unixToISO(row.timestamp);
       }
-      if (!employeeData[employee].last_seen || row.last_seen > employeeData[employee].last_seen) {
-        employeeData[employee].last_seen = unixToISO(row.last_seen);
+      if (!employeeData[employee].last_seen || row.timestamp > employeeData[employee].last_seen) {
+        employeeData[employee].last_seen = unixToISO(row.timestamp);
       }
+    });
+
+    // Calculate work hours by finding continuous presence periods
+    Object.values(employeeData).forEach(employee => {
+      const detections = employee.detections;
+      if (detections.length === 0) return;
+
+      // Sort detections by timestamp
+      detections.sort((a, b) => a.timestamp - b.timestamp);
+
+      // Group detections into continuous work sessions
+      const workSessions = [];
+      let currentSession = null;
+      const MAX_GAP_MINUTES = 10; // 10 minutes gap = new session
+      const MAX_GAP_SECONDS = MAX_GAP_MINUTES * 60;
+
+      detections.forEach((detection, index) => {
+        if (!currentSession) {
+          // Start new session
+          currentSession = {
+            start_time: detection.timestamp,
+            end_time: detection.timestamp,
+            cameras: new Set([detection.camera]),
+            zones: new Set(detection.zones || []),
+            detection_count: 1,
+            avg_confidence: detection.confidence
+          };
+        } else {
+          const gap = detection.timestamp - currentSession.end_time;
+          
+          if (gap <= MAX_GAP_SECONDS) {
+            // Continue current session
+            currentSession.end_time = detection.timestamp;
+            currentSession.cameras.add(detection.camera);
+            if (detection.zones) {
+              detection.zones.forEach(zone => currentSession.zones.add(zone));
+            }
+            currentSession.detection_count++;
+            currentSession.avg_confidence = (currentSession.avg_confidence + detection.confidence) / 2;
+          } else {
+            // Gap too large - save current session and start new one
+            workSessions.push({
+              ...currentSession,
+              cameras: Array.from(currentSession.cameras),
+              zones: Array.from(currentSession.zones),
+              duration_hours: (currentSession.end_time - currentSession.start_time) / 3600,
+              first_seen: unixToISO(currentSession.start_time),
+              last_seen: unixToISO(currentSession.end_time)
+            });
+            
+            // Start new session
+            currentSession = {
+              start_time: detection.timestamp,
+              end_time: detection.timestamp,
+              cameras: new Set([detection.camera]),
+              zones: new Set(detection.zones || []),
+              detection_count: 1,
+              avg_confidence: detection.confidence
+            };
+          }
+        }
+      });
+
+      // Don't forget the last session
+      if (currentSession) {
+        workSessions.push({
+          ...currentSession,
+          cameras: Array.from(currentSession.cameras),
+          zones: Array.from(currentSession.zones),
+          duration_hours: (currentSession.end_time - currentSession.start_time) / 3600,
+          first_seen: unixToISO(currentSession.start_time),
+          last_seen: unixToISO(currentSession.end_time)
+        });
+      }
+
+      // Calculate total work hours
+      employee.total_work_hours = workSessions.reduce((total, session) => {
+        return total + session.duration_hours;
+      }, 0);
+
+      // Calculate arrival and departure times (store as Unix timestamps for timezone conversion)
+      employee.arrival_timestamp = workSessions.length > 0 ? workSessions[0].start_time : null;
+      employee.departure_timestamp = workSessions.length > 0 ? workSessions[workSessions.length - 1].end_time : null;
+      
+      // Convert to timezone-specific times
+      employee.arrival_time = employee.arrival_timestamp ? convertToISO(employee.arrival_timestamp, timezone) : null;
+      employee.departure_time = employee.departure_timestamp ? convertToISO(employee.departure_timestamp, timezone) : null;
+      
+      // Also store first_seen and last_seen for compatibility
+      employee.first_seen = employee.arrival_time;
+      employee.last_seen = employee.departure_time;
+
+      logger.info(`Employee ${employee.employee_name}: ${workSessions.length} sessions, ${employee.total_work_hours.toFixed(2)} hours`);
+
+      // Store work sessions with timezone conversion
+      employee.sessions = workSessions.map(session => ({
+        ...session,
+        first_seen: convertToISO(session.start_time, timezone),
+        last_seen: convertToISO(session.end_time, timezone)
+      }));
+
+      // Clean up
+      delete employee.detections;
     });
 
     // Convert sets to arrays and add calculated fields
@@ -126,10 +241,11 @@ const getEmployeeWorkHours = async (filters = {}) => {
         ? employees.reduce((sum, emp) => sum + emp.total_work_hours, 0) / employees.length 
         : 0,
       period: {
-        start: unixToISO(startTime),
-        end: unixToISO(endTime),
+        start: convertToISO(startTime, timezone),
+        end: convertToISO(endTime, timezone),
         duration_hours: (endTime - startTime) / 3600
-      }
+      },
+      timezone_info: getTimezoneInfo(timezone)
     };
 
   } catch (error) {
@@ -145,97 +261,109 @@ const getEmployeeWorkHours = async (filters = {}) => {
  */
 const getEmployeeBreakTime = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, employee_name, camera } = filters;
+    const { start_date, end_date, hours, employee_name, camera, timezone = 'UTC' } = filters;
     const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
-
-    let whereClause = `
-      WHERE timestamp >= $1 AND timestamp <= $2
-      AND class_type = 'left_zone'
-      AND data->>'label' = 'person'
-    `;
-    const params = [startTime, endTime];
-    let paramIndex = 3;
-
-    if (employee_name) {
-      whereClause += ` AND data->'sub_label'->>0 = $${paramIndex}`;
-      params.push(employee_name);
-      paramIndex++;
-    }
-
-    if (camera) {
-      whereClause += ` AND camera = $${paramIndex}`;
-      params.push(camera);
-      paramIndex++;
-    }
-
-    const sql = `
-      SELECT
-        data->'sub_label'->>0 as employee_name,
-        camera,
-        data->'zones' as zones,
-        timestamp as break_time,
-        LAG(timestamp) OVER (PARTITION BY data->'sub_label'->>0 ORDER BY timestamp) as previous_activity
-      FROM timeline
-      ${whereClause}
-      ORDER BY data->'sub_label'->>0, timestamp
-    `;
-
-    const result = await query(sql, params);
-
-    // Process break time data
-    const breakData = {};
     
-    result.forEach(row => {
-      const employee = row.employee_name || 'Unknown';
-      if (!breakData[employee]) {
-        breakData[employee] = {
-          employee_name: employee,
-          total_breaks: 0,
-          total_break_time: 0,
-          break_sessions: [],
-          average_break_duration: 0,
-          longest_break: 0,
-          shortest_break: Infinity
-        };
+    // Validate timezone
+    if (!isValidTimezone(timezone)) {
+      throw new Error(`Invalid timezone: ${timezone}`);
+    }
+
+    // Get work hours data first to use the session-based approach
+    const workHoursData = await getEmployeeWorkHours(filters);
+    
+    if (!workHoursData || !workHoursData.employees || workHoursData.employees.length === 0) {
+      return {
+        employees: [],
+        total_employees: 0,
+        total_break_time: 0,
+        average_break_time: 0
+      };
+    }
+
+    const MIN_BREAK_DURATION_HOURS = 0.1667; // 10 minutes minimum break duration
+    const breakData = [];
+
+    // Process each employee's work sessions to find breaks
+    for (const employee of workHoursData.employees) {
+      const sessions = employee.sessions || [];
+      if (sessions.length < 2) {
+        // Need at least 2 sessions to have a break
+        continue;
       }
 
-      if (row.previous_activity) {
-        const breakDuration = (row.break_time - row.previous_activity) / 3600; // hours
-        breakData[employee].total_breaks++;
-        breakData[employee].total_break_time += breakDuration;
-        breakData[employee].break_sessions.push({
-          camera: row.camera,
-          zones: row.zones || [],
-          break_time: unixToISO(row.break_time),
-          duration_hours: breakDuration,
-          previous_activity: unixToISO(row.previous_activity)
+      // Sort sessions by start time
+      const sortedSessions = sessions.sort((a, b) => new Date(a.first_seen) - new Date(b.first_seen));
+      const breakSessions = [];
+
+      // Find gaps between consecutive sessions
+      for (let i = 0; i < sortedSessions.length - 1; i++) {
+        const currentSession = sortedSessions[i];
+        const nextSession = sortedSessions[i + 1];
+        
+        const currentEnd = new Date(currentSession.last_seen);
+        const nextStart = new Date(nextSession.first_seen);
+        const breakDuration = (nextStart - currentEnd) / (1000 * 60 * 60); // Convert to hours
+
+        if (breakDuration >= MIN_BREAK_DURATION_HOURS) {
+          breakSessions.push({
+            break_start: currentSession.last_seen,
+            break_end: nextSession.first_seen,
+            duration_hours: breakDuration,
+            previous_session: {
+              camera: currentSession.camera,
+              zones: currentSession.zones,
+              ended_at: currentSession.last_seen
+            },
+            next_session: {
+              camera: nextSession.camera,
+              zones: nextSession.zones,
+              started_at: nextSession.first_seen
+            }
+          });
+        }
+      }
+
+      if (breakSessions.length > 0) {
+        const totalBreakTime = breakSessions.reduce((sum, breakSession) => sum + breakSession.duration_hours, 0);
+        
+        // Ensure break time doesn't exceed work time (sanity check)
+        const maxAllowedBreakTime = employee.total_work_hours * 0.8; // Max 80% of work time can be breaks
+        const actualBreakTime = Math.min(totalBreakTime, maxAllowedBreakTime);
+        
+        const averageBreakDuration = actualBreakTime / breakSessions.length;
+        const longestBreak = Math.max(...breakSessions.map(bs => bs.duration_hours));
+        const shortestBreak = Math.min(...breakSessions.map(bs => bs.duration_hours));
+        const breakFrequency = breakSessions.length / Math.max(employee.total_work_hours, 1); // Use employee's work hours
+        const breakEfficiency = Math.max(0, 100 - (breakFrequency * 10)); // Simple efficiency calculation
+
+        breakData.push({
+          employee_name: employee.employee_name,
+          total_breaks: breakSessions.length,
+          total_break_time: actualBreakTime,
+          break_sessions: processBreakSessionsTimezone(breakSessions, timezone),
+          average_break_duration: averageBreakDuration,
+          longest_break: longestBreak,
+          shortest_break: shortestBreak,
+          break_frequency: breakFrequency,
+          break_efficiency: breakEfficiency,
+          work_hours: employee.total_work_hours,
+          arrival_time: employee.arrival_time,
+          departure_time: employee.departure_time
         });
-
-        if (breakDuration > breakData[employee].longest_break) {
-          breakData[employee].longest_break = breakDuration;
-        }
-        if (breakDuration < breakData[employee].shortest_break) {
-          breakData[employee].shortest_break = breakDuration;
-        }
       }
-    });
+    }
 
-    // Calculate averages and convert to array
-    const employees = Object.values(breakData).map(emp => ({
-      ...emp,
-      average_break_duration: emp.total_breaks > 0 ? emp.total_break_time / emp.total_breaks : 0,
-      shortest_break: emp.shortest_break === Infinity ? 0 : emp.shortest_break,
-      break_frequency: emp.total_breaks / ((endTime - startTime) / 3600), // breaks per hour
-      break_efficiency: calculateBreakEfficiency(emp)
-    }));
+    // Calculate overall statistics
+    const totalBreakTime = breakData.reduce((sum, emp) => sum + emp.total_break_time, 0);
+    const averageBreakTime = breakData.length > 0 ? totalBreakTime / breakData.length : 0;
 
     return {
-      employees,
-      total_employees: employees.length,
-      total_break_time: employees.reduce((sum, emp) => sum + emp.total_break_time, 0),
-      average_break_time: employees.length > 0 
-        ? employees.reduce((sum, emp) => sum + emp.total_break_time, 0) / employees.length 
-        : 0
+      employees: breakData,
+      total_employees: breakData.length,
+      total_break_time: totalBreakTime,
+      average_break_time: averageBreakTime,
+      timezone_info: getTimezoneInfo(timezone)
     };
 
   } catch (error) {

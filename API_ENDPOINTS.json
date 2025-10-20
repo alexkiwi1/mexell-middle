@@ -1,0 +1,208 @@
+{
+  "base_url": "http://10.100.6.2:5002/v1",
+  "authentication": {
+    "header": "X-API-Key",
+    "value": "frigate-api-key-2024"
+  },
+  "endpoints": {
+    "employee_management": {
+      "work_hours": {
+        "method": "GET",
+        "path": "/api/employees/work-hours",
+        "parameters": ["start_date", "end_date", "timezone", "employee_name", "camera", "hours"],
+        "description": "Get employee work hours and productivity data"
+      },
+      "break_time": {
+        "method": "GET", 
+        "path": "/api/employees/break-time",
+        "parameters": ["start_date", "end_date", "timezone", "employee_name", "camera", "hours"],
+        "description": "Get employee break time analysis"
+      },
+      "attendance": {
+        "method": "GET",
+        "path": "/api/employees/attendance", 
+        "parameters": ["start_date", "end_date", "timezone", "employee_name", "camera", "hours"],
+        "description": "Get employee attendance records"
+      },
+      "activity_patterns": {
+        "method": "GET",
+        "path": "/api/employees/activity-patterns",
+        "parameters": ["start_date", "end_date", "timezone", "employee_name", "camera", "hours"],
+        "description": "Get employee activity patterns and trends"
+      }
+    },
+    "camera_management": {
+      "summary": {
+        "method": "GET",
+        "path": "/api/cameras/summary",
+        "parameters": ["start_date", "end_date", "timezone", "camera"],
+        "description": "Get camera summary and status"
+      },
+      "activity": {
+        "method": "GET",
+        "path": "/api/cameras/activity",
+        "parameters": ["start_date", "end_date", "timezone", "camera"],
+        "description": "Get camera activity feed"
+      },
+      "list": {
+        "method": "GET",
+        "path": "/api/cameras",
+        "parameters": [],
+        "description": "Get list of all cameras"
+      }
+    },
+    "violations": {
+      "cell_phones": {
+        "method": "GET",
+        "path": "/api/violations/cell-phones",
+        "parameters": ["start_date", "end_date", "timezone", "employee_name", "camera", "severity", "limit"],
+        "description": "Get cell phone violations with employee assignment"
+      }
+    },
+    "analytics": {
+      "dashboard": {
+        "method": "GET",
+        "path": "/api/analytics/dashboard",
+        "parameters": ["start_date", "end_date", "timezone"],
+        "description": "Get comprehensive dashboard data"
+      },
+      "trends": {
+        "method": "GET",
+        "path": "/api/analytics/trends",
+        "parameters": ["start_date", "end_date", "timezone", "metric"],
+        "description": "Get trend analysis data"
+      }
+    },
+    "timezone": {
+      "list": {
+        "method": "GET",
+        "path": "/api/timezone/list",
+        "parameters": [],
+        "description": "Get list of supported timezones"
+      },
+      "info": {
+        "method": "GET",
+        "path": "/api/timezone/info/{timezone}",
+        "parameters": ["timezone"],
+        "description": "Get timezone information"
+      },
+      "convert": {
+        "method": "GET",
+        "path": "/api/timezone/convert/{timestamp}",
+        "parameters": ["timestamp", "timezone", "format"],
+        "description": "Convert timestamp to timezone"
+      },
+      "validate": {
+        "method": "GET",
+        "path": "/api/timezone/validate/{timezone}",
+        "parameters": ["timezone"],
+        "description": "Validate timezone string"
+      }
+    },
+    "mobile": {
+      "dashboard": {
+        "method": "GET",
+        "path": "/api/mobile/dashboard",
+        "parameters": ["hours", "timezone"],
+        "description": "Get mobile-optimized dashboard data"
+      }
+    },
+    "system": {
+      "health": {
+        "method": "GET",
+        "path": "/health",
+        "parameters": [],
+        "description": "Health check endpoint"
+      }
+    }
+  },
+  "common_parameters": {
+    "start_date": {
+      "type": "string",
+      "format": "YYYY-MM-DD",
+      "description": "Start date for data range",
+      "example": "2025-10-20"
+    },
+    "end_date": {
+      "type": "string", 
+      "format": "YYYY-MM-DD",
+      "description": "End date for data range",
+      "example": "2025-10-20"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "Timezone for data display",
+      "options": ["PKT", "EST", "UTC", "IST", "GMT"],
+      "default": "UTC",
+      "example": "PKT"
+    },
+    "employee_name": {
+      "type": "string",
+      "description": "Filter by specific employee name",
+      "example": "Arbaz"
+    },
+    "camera": {
+      "type": "string",
+      "description": "Filter by specific camera",
+      "options": ["employees_01", "employees_02", "employees_03", "employees_04", "employees_05", "employees_06", "employees_07", "employees_08", "admin_office", "reception", "meeting_room"],
+      "example": "employees_01"
+    },
+    "hours": {
+      "type": "number",
+      "description": "Hours to look back from current time",
+      "example": 24
+    },
+    "severity": {
+      "type": "string",
+      "description": "Filter by violation severity",
+      "options": ["high", "medium", "low"],
+      "example": "high"
+    },
+    "limit": {
+      "type": "number",
+      "description": "Maximum number of results to return",
+      "default": 50,
+      "example": 100
+    }
+  },
+  "response_format": {
+    "success": {
+      "type": "boolean",
+      "description": "Indicates if the request was successful"
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable message about the response"
+    },
+    "data": {
+      "type": "object",
+      "description": "The actual response data"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "ISO 8601",
+      "description": "Response timestamp in specified timezone"
+    }
+  },
+  "example_requests": {
+    "get_employees_today": {
+      "url": "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=PKT",
+      "headers": {
+        "X-API-Key": "frigate-api-key-2024"
+      }
+    },
+    "get_violations_this_week": {
+      "url": "http://10.100.6.2:5002/v1/api/violations/cell-phones?start_date=2025-10-14&end_date=2025-10-20&timezone=PKT&severity=high",
+      "headers": {
+        "X-API-Key": "frigate-api-key-2024"
+      }
+    },
+    "get_dashboard_data": {
+      "url": "http://10.100.6.2:5002/v1/api/analytics/dashboard?start_date=2025-10-20&end_date=2025-10-20&timezone=PKT",
+      "headers": {
+        "X-API-Key": "frigate-api-key-2024"
+      }
+    }
+  }
+}
+

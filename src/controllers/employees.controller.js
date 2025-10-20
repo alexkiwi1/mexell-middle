@@ -127,3 +127,4 @@ module.exports = {
   getEmployeeAttendanceController,
   getEmployeeActivityPatternsController
 };
+

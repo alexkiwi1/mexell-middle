@@ -243,3 +243,4 @@ curl -s "http://localhost:5002/v1/api/cameras/summary?hours=24" | jq '.data.coun
 ```
 
 This documentation provides comprehensive guidance for using the new date/time parameters across all API endpoints.
+

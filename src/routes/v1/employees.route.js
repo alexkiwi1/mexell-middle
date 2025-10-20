@@ -554,3 +554,4 @@ router.get('/api/employees/attendance', employeesController.getEmployeeAttendanc
 router.get('/api/employees/activity-patterns', employeesController.getEmployeeActivityPatternsController);
 
 module.exports = router;
+

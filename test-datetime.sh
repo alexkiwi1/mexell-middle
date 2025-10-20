@@ -145,3 +145,4 @@ echo "  curl \"$BASE_URL/v1/api/cameras/employees_01/violations?start_date=2025-
 echo ""
 echo "  # Work hours analysis"
 echo "  curl \"$BASE_URL/v1/api/cameras/summary?start_date=2025-10-01T08:00:00.000Z&end_date=2025-10-01T17:00:00.000Z\""
+

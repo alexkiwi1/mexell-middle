@@ -1,0 +1,928 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-21T03:15:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_health_check",
+      "parentId": "fld_dashboard_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/health",
+      "name": "Health Check",
+      "description": "Check API health and system status",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_work_hours",
+      "parentId": "fld_employee_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/employees/work-hours?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}",
+      "name": "Employee Work Hours",
+      "description": "Get employee work hours, productivity, and attendance data",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date", 
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        },
+        {
+          "name": "employee_name",
+          "value": "",
+          "description": "Filter by specific employee (optional)"
+        },
+        {
+          "name": "camera",
+          "value": "",
+          "description": "Filter by camera (optional)"
+        },
+        {
+          "name": "hours",
+          "value": "",
+          "description": "Hours to look back (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_break_time",
+      "parentId": "fld_employee_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/employees/break-time?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}",
+      "name": "Employee Break Time",
+      "description": "Get employee break time analysis and patterns",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        },
+        {
+          "name": "employee_name",
+          "value": "",
+          "description": "Filter by specific employee (optional)"
+        },
+        {
+          "name": "camera",
+          "value": "",
+          "description": "Filter by camera (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_attendance",
+      "parentId": "fld_employee_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/employees/attendance?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}",
+      "name": "Employee Attendance",
+      "description": "Get employee attendance records and status",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        },
+        {
+          "name": "employee_name",
+          "value": "",
+          "description": "Filter by specific employee (optional)"
+        },
+        {
+          "name": "camera",
+          "value": "",
+          "description": "Filter by camera (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_employee_activity_patterns",
+      "parentId": "fld_employee_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/employees/activity-patterns?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}",
+      "name": "Employee Activity Patterns",
+      "description": "Get employee activity patterns and productivity trends",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        },
+        {
+          "name": "employee_name",
+          "value": "",
+          "description": "Filter by specific employee (optional)"
+        },
+        {
+          "name": "camera",
+          "value": "",
+          "description": "Filter by camera (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_list",
+      "parentId": "fld_camera_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/cameras",
+      "name": "Camera List",
+      "description": "Get list of all cameras with status and configuration",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_summary",
+      "parentId": "fld_camera_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/cameras/summary?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}",
+      "name": "Camera Summary",
+      "description": "Get camera summary with activity counts and status",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        },
+        {
+          "name": "camera",
+          "value": "",
+          "description": "Filter by specific camera (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_camera_activity",
+      "parentId": "fld_camera_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/cameras/activity?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}",
+      "name": "Camera Activity",
+      "description": "Get real-time camera activity feed",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        },
+        {
+          "name": "camera",
+          "value": "",
+          "description": "Filter by specific camera (optional)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_cell_phone_violations",
+      "parentId": "fld_violation_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/violations/cell-phones?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}&severity={{ _.severity }}",
+      "name": "Cell Phone Violations",
+      "description": "Get cell phone violations with employee assignment and media URLs",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        },
+        {
+          "name": "employee_name",
+          "value": "",
+          "description": "Filter by specific employee (optional)"
+        },
+        {
+          "name": "camera",
+          "value": "",
+          "description": "Filter by camera (optional)"
+        },
+        {
+          "name": "severity",
+          "value": "{{ _.severity }}",
+          "description": "Filter by severity (high, medium, low)"
+        },
+        {
+          "name": "limit",
+          "value": "50",
+          "description": "Maximum results to return"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_dashboard_data",
+      "parentId": "fld_analytics_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/analytics/dashboard?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}",
+      "name": "Dashboard Data",
+      "description": "Get comprehensive dashboard overview with metrics and trends",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_trend_analysis",
+      "parentId": "fld_analytics_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/analytics/trends?start_date={{ _.start_date }}&end_date={{ _.end_date }}&timezone={{ _.timezone }}&metric={{ _.metric }}",
+      "name": "Trend Analysis",
+      "description": "Get trend analysis data for productivity, violations, and attendance",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "start_date",
+          "value": "{{ _.start_date }}",
+          "description": "Start date (YYYY-MM-DD)"
+        },
+        {
+          "name": "end_date",
+          "value": "{{ _.end_date }}",
+          "description": "End date (YYYY-MM-DD)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        },
+        {
+          "name": "metric",
+          "value": "{{ _.metric }}",
+          "description": "Metric type (productivity, violations, attendance)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_timezone_list",
+      "parentId": "fld_timezone_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/timezone/list",
+      "name": "Timezone List",
+      "description": "Get list of supported timezones",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_timezone_info",
+      "parentId": "fld_timezone_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/timezone/info/{{ _.timezone }}",
+      "name": "Timezone Info",
+      "description": "Get detailed information for a specific timezone",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone abbreviation or IANA name"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_timezone_convert",
+      "parentId": "fld_timezone_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/timezone/convert/{{ _.timestamp }}?timezone={{ _.timezone }}&format={{ _.format }}",
+      "name": "Convert Timestamp",
+      "description": "Convert Unix timestamp to specific timezone",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "timestamp",
+          "value": "{{ _.timestamp }}",
+          "description": "Unix timestamp to convert"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Target timezone"
+        },
+        {
+          "name": "format",
+          "value": "{{ _.format }}",
+          "description": "Output format (YYYY-MM-DD HH:mm:ss)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_mobile_dashboard",
+      "parentId": "fld_mobile_apis",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "url": "{{ _.base_url }}/api/mobile/dashboard?hours={{ _.hours }}&timezone={{ _.timezone }}",
+      "name": "Mobile Dashboard",
+      "description": "Get mobile-optimized dashboard data",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "value": "{{ _.hours }}",
+          "description": "Hours to look back (default: 1)"
+        },
+        {
+          "name": "timezone",
+          "value": "{{ _.timezone }}",
+          "description": "Timezone (PKT, EST, UTC, etc.)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1737342900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://10.100.6.2:5002/v1",
+        "api_key": "frigate-api-key-2024",
+        "start_date": "2025-10-20",
+        "end_date": "2025-10-20",
+        "timezone": "PKT",
+        "severity": "high",
+        "metric": "productivity",
+        "hours": "1",
+        "timestamp": "1737342900",
+        "format": "YYYY-MM-DD HH:mm:ss"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "api_key",
+          "start_date",
+          "end_date",
+          "timezone",
+          "severity",
+          "metric",
+          "hours",
+          "timestamp",
+          "format"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "isBase": true,
+      "_type": "environment"
+    },
+    {
+      "_id": "env_pakistan",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "Pakistan Timezone",
+      "data": {
+        "base_url": "http://10.100.6.2:5002/v1",
+        "api_key": "frigate-api-key-2024",
+        "start_date": "2025-10-20",
+        "end_date": "2025-10-20",
+        "timezone": "PKT",
+        "severity": "high",
+        "metric": "productivity",
+        "hours": "1",
+        "timestamp": "1737342900",
+        "format": "YYYY-MM-DD HH:mm:ss"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "api_key",
+          "start_date",
+          "end_date",
+          "timezone",
+          "severity",
+          "metric",
+          "hours",
+          "timestamp",
+          "format"
+        ]
+      },
+      "color": "#7d69cb",
+      "isPrivate": false,
+      "isBase": false,
+      "_type": "environment"
+    },
+    {
+      "_id": "env_est",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "Eastern Time",
+      "data": {
+        "base_url": "http://10.100.6.2:5002/v1",
+        "api_key": "frigate-api-key-2024",
+        "start_date": "2025-10-20",
+        "end_date": "2025-10-20",
+        "timezone": "EST",
+        "severity": "high",
+        "metric": "productivity",
+        "hours": "1",
+        "timestamp": "1737342900",
+        "format": "YYYY-MM-DD HH:mm:ss"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "api_key",
+          "start_date",
+          "end_date",
+          "timezone",
+          "severity",
+          "metric",
+          "hours",
+          "timestamp",
+          "format"
+        ]
+      },
+      "color": "#2ecc71",
+      "isPrivate": false,
+      "isBase": false,
+      "_type": "environment"
+    },
+    {
+      "_id": "env_utc",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "UTC Timezone",
+      "data": {
+        "base_url": "http://10.100.6.2:5002/v1",
+        "api_key": "frigate-api-key-2024",
+        "start_date": "2025-10-20",
+        "end_date": "2025-10-20",
+        "timezone": "UTC",
+        "severity": "high",
+        "metric": "productivity",
+        "hours": "1",
+        "timestamp": "1737342900",
+        "format": "YYYY-MM-DD HH:mm:ss"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "api_key",
+          "start_date",
+          "end_date",
+          "timezone",
+          "severity",
+          "metric",
+          "hours",
+          "timestamp",
+          "format"
+        ]
+      },
+      "color": "#e74c3c",
+      "isPrivate": false,
+      "isBase": false,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_dashboard_apis",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "🏠 Dashboard APIs",
+      "description": "Core dashboard and system APIs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737342900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_employee_apis",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "👥 Employee APIs",
+      "description": "Employee work hours, attendance, and activity APIs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737342900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_camera_apis",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "📹 Camera APIs",
+      "description": "Camera management and monitoring APIs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737342900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_violation_apis",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "🚨 Violation APIs",
+      "description": "Cell phone violations and security APIs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737342900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_analytics_apis",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "📊 Analytics APIs",
+      "description": "Dashboard analytics and trend analysis APIs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737342900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_timezone_apis",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "🌍 Timezone APIs",
+      "description": "Timezone management and conversion APIs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737342900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_mobile_apis",
+      "parentId": "wrk_frigate_dashboard",
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "📱 Mobile APIs",
+      "description": "Mobile-optimized dashboard APIs",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1737342900000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_frigate_dashboard",
+      "parentId": null,
+      "modified": 1737342900000,
+      "created": 1737342900000,
+      "name": "🚀 Frigate Dashboard APIs",
+      "description": "Complete API collection for Frigate Employee Monitoring Dashboard",
+      "scope": "collection",
+      "_type": "workspace"
+    }
+  ]
+}
+

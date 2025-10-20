@@ -1,12 +1,12 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 RUN mkdir -p /usr/src/node-app && chown -R node:node /usr/src/node-app
 
 WORKDIR /usr/src/node-app
 
-COPY package.json yarn.lock ./
+COPY package.json ./
 
-RUN yarn install --pure-lockfile && chown -R node:node /usr/src/node-app
+RUN yarn install && chown -R node:node /usr/src/node-app
 
 COPY --chown=node:node . .
 

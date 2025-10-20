@@ -111,3 +111,4 @@ echo ""
 echo "To test media proxy with different files:"
 echo "  curl -I \"$BASE_URL/media/recordings/2025-10-19/23/employees_01/18.20.mp4\""
 echo "  curl -I \"$BASE_URL/media/clips/review/thumb-employees_02-1760914420.651279-dlfiqf.webp\""
+

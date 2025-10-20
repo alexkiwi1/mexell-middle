@@ -29,7 +29,17 @@ const envVarsSchema = Joi.object()
     FRIGATE_DB_NAME: Joi.string().required().description('Frigate PostgreSQL database name'),
     FRIGATE_DB_USER: Joi.string().required().description('Frigate PostgreSQL username'),
     FRIGATE_DB_PASSWORD: Joi.string().required().description('Frigate PostgreSQL password'),
-    VIDEO_SERVER_URL: Joi.string().required().description('Frigate video server URL'),
+        VIDEO_SERVER_URL: Joi.string().required().description('Frigate video server URL'),
+        // Redis Configuration
+        REDIS_HOST: Joi.string().default('localhost').description('Redis host'),
+        REDIS_PORT: Joi.number().default(6379).description('Redis port'),
+        REDIS_PASSWORD: Joi.string().allow('').default('').description('Redis password'),
+        REDIS_DB: Joi.number().default(0).description('Redis database number'),
+        REDIS_CLUSTER: Joi.boolean().default(false).description('Enable Redis cluster mode'),
+        // Security Configuration
+        JWT_SECRET: Joi.string().default('frigate-secret-key-2024').description('JWT secret key'),
+        VALID_API_KEYS: Joi.string().default('frigate-api-key-2024,test-api-key').description('Valid API keys (comma-separated)'),
+        ALLOWED_ORIGINS: Joi.string().default('http://localhost:3000,http://localhost:8080').description('Allowed CORS origins (comma-separated)'),
   })
   .unknown();
 

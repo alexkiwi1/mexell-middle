@@ -527,3 +527,4 @@ router.post('/api/performance/reset', performanceController.resetPerformanceMetr
 router.get('/api/performance/health', performanceController.getSystemHealthController);
 
 module.exports = router;
+

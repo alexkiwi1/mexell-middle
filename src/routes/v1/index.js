@@ -12,6 +12,8 @@ const analyticsRoute = require('./analytics.route');
 const websocketRoute = require('./websocket.route');
 const mobileRoute = require('./mobile.route');
 const performanceRoute = require('./performance.route');
+const timezoneRoute = require('./timezone.route');
+const reportsRoute = require('./reports.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -65,6 +67,14 @@ const defaultRoutes = [
       {
         path: '/',
         route: performanceRoute,
+      },
+      {
+        path: '/',
+        route: timezoneRoute,
+      },
+      {
+        path: '/',
+        route: reportsRoute,
       },
     ];
 

@@ -756,3 +756,4 @@ router.get('/api/analytics/predictive', analyticsController.getPredictiveAnalyti
 router.get('/api/analytics/reports', analyticsController.getCustomReportController);
 
 module.exports = router;
+

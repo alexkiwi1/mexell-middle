@@ -410,8 +410,8 @@ const getSmartEmployeeAssignment = (violation, allViolations) => {
     .slice(-ASSIGNMENT_CONFIG.recentActivityWindow);
   
   const recentEmployees = recentViolations
-    .filter(v => v.assignedEmployee && v.assignedEmployee !== 'Unknown')
-    .map(v => v.assignedEmployee);
+    .filter(v => v.face_employee_name && v.face_employee_name !== 'Unknown')
+    .map(v => v.face_employee_name);
   
   if (recentEmployees.length > 0) {
     // Find most frequent recent employee
