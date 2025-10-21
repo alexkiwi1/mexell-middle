@@ -639,6 +639,20 @@ const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTi
     return false;
   };
 
+  // Helper function to check if employee's desk is occupied by someone else
+  const isDeskOccupiedByOthers = (detection, employeeName) => {
+    if (!detection.zones || !employeeName) return false;
+    
+    // Check if any desk zones are detected
+    const deskZones = detection.zones.filter(zone => zone.startsWith('desk_'));
+    if (deskZones.length === 0) return false;
+    
+    // For now, we'll assume if desk zones are detected, someone is there
+    // In a more sophisticated system, we'd check if it's the same employee
+    // This is a simplified check - desk zones present = desk occupied
+    return true;
+  };
+
   // Group consecutive detections into presence periods
   for (const detection of sortedDetections) {
     const isWorking = isWorkingDetection(detection);
@@ -678,35 +692,61 @@ const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTi
   }
 
   // Calculate breaks between non-working periods
+  // Only count as break if employee is not detected AND desk is empty for >30 minutes
   for (let i = 0; i < presenceTimeline.length - 1; i++) {
     const currentPresence = presenceTimeline[i];
     const nextPresence = presenceTimeline[i + 1];
     
-    // Only count as break if current period was working and next period is also working
-    // with a gap between them
+    // Only count as break if:
+    // 1. Current period was working (employee was detected)
+    // 2. Next period is also working (employee detected again)
+    // 3. Gap between them is ≥30 minutes
+    // 4. During the gap, employee was not detected anywhere AND desk was empty
     if (currentPresence.isWorking && nextPresence.isWorking) {
       const breakStart = currentPresence.end;
       const breakEnd = nextPresence.start;
       const breakDuration = (breakEnd - breakStart) / 3600; // Convert to hours
 
       if (breakDuration >= MIN_BREAK_MINUTES / 60) {
-        breakSessions.push({
-          break_start: new Date(breakStart * 1000).toISOString(),
-          break_end: new Date(breakEnd * 1000).toISOString(),
-          duration_hours: breakDuration,
-          previous_presence: {
-            ended_at: new Date(breakStart * 1000).toISOString(),
-            detection_count: currentPresence.detections.length,
-            was_working: currentPresence.isWorking
-          },
-          next_presence: {
-            started_at: new Date(breakEnd * 1000).toISOString(),
-            detection_count: nextPresence.detections.length,
-            was_working: nextPresence.isWorking
-          }
-        });
+        // Check if during the break period, employee was not detected anywhere
+        // and their desk was empty (no desk zone detections)
+        const breakPeriodDetections = sortedDetections.filter(detection => 
+          detection.timestamp > breakStart && detection.timestamp < breakEnd
+        );
         
-        totalBreakTime += breakDuration;
+        const wasEmployeeDetectedDuringBreak = breakPeriodDetections.some(detection => 
+          isWorkingDetection(detection)
+        );
+        
+        const wasDeskOccupiedDuringBreak = breakPeriodDetections.some(detection => 
+          isDeskOccupiedByOthers(detection, employeeName)
+        );
+        
+        // Only count as break if employee was NOT detected AND desk was empty
+        if (!wasEmployeeDetectedDuringBreak && !wasDeskOccupiedDuringBreak) {
+          breakSessions.push({
+            break_start: new Date(breakStart * 1000).toISOString(),
+            break_end: new Date(breakEnd * 1000).toISOString(),
+            duration_hours: breakDuration,
+            previous_presence: {
+              ended_at: new Date(breakStart * 1000).toISOString(),
+              detection_count: currentPresence.detections.length,
+              was_working: currentPresence.isWorking
+            },
+            next_presence: {
+              started_at: new Date(breakEnd * 1000).toISOString(),
+              detection_count: nextPresence.detections.length,
+              was_working: nextPresence.isWorking
+            },
+            break_conditions: {
+              employee_not_detected: !wasEmployeeDetectedDuringBreak,
+              desk_empty: !wasDeskOccupiedDuringBreak,
+              gap_duration_minutes: breakDuration * 60
+            }
+          });
+          
+          totalBreakTime += breakDuration;
+        }
       }
     }
   }
