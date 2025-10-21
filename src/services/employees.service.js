@@ -31,7 +31,7 @@ const logger = require('../config/logger');
 const getEmployeeWorkHours = async (filters = {}) => {
   try {
     const { start_date, end_date, hours, employee_name, camera, timezone = 'UTC' } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
     
     // Validate timezone
     if (!isValidTimezone(timezone)) {
@@ -190,14 +190,27 @@ const getEmployeeWorkHours = async (filters = {}) => {
         });
       }
 
-      // Calculate total work hours
-      employee.total_work_hours = workSessions.reduce((total, session) => {
-        return total + session.duration_hours;
-      }, 0);
-
       // Calculate arrival and departure times (store as Unix timestamps for timezone conversion)
       employee.arrival_timestamp = workSessions.length > 0 ? workSessions[0].start_time : null;
       employee.departure_timestamp = workSessions.length > 0 ? workSessions[workSessions.length - 1].end_time : null;
+      
+      // Calculate total time at office (arrival to departure)
+      employee.total_time = employee.arrival_timestamp && employee.departure_timestamp 
+        ? (employee.departure_timestamp - employee.arrival_timestamp) / 3600 
+        : 0;
+
+      // Calculate break time using shared logic
+      const breakSessions = calculateBreaksFromSessions(workSessions);
+      employee.total_break_time = breakSessions.reduce((total, breakSession) => {
+        return total + breakSession.duration_hours;
+      }, 0);
+
+      // Calculate office time (total time - break time)
+      employee.total_work_hours = employee.total_time - employee.total_break_time;
+      employee.office_time = employee.total_work_hours; // Alias for clarity
+
+      // Validate time consistency
+      validateTimeConsistency(employee);
       
       // Convert to timezone-specific times
       employee.arrival_time = employee.arrival_timestamp ? convertToISO(employee.arrival_timestamp, timezone) : null;
@@ -207,7 +220,7 @@ const getEmployeeWorkHours = async (filters = {}) => {
       employee.first_seen = employee.arrival_time;
       employee.last_seen = employee.departure_time;
 
-      logger.info(`Employee ${employee.employee_name}: ${workSessions.length} sessions, ${employee.total_work_hours.toFixed(2)} hours`);
+      logger.info(`Employee ${employee.employee_name}: ${workSessions.length} sessions, Total=${employee.total_time.toFixed(2)}h, Office=${employee.office_time.toFixed(2)}h, Break=${employee.total_break_time.toFixed(2)}h`);
 
       // Store work sessions with timezone conversion
       employee.sessions = workSessions.map(session => ({
@@ -230,7 +243,12 @@ const getEmployeeWorkHours = async (filters = {}) => {
         : 0,
       productivity_score: calculateProductivityScore(emp),
       attendance_status: getAttendanceStatus(emp.total_work_hours),
-      work_efficiency: calculateWorkEfficiency(emp)
+      work_efficiency: calculateWorkEfficiency(emp),
+      // Add new time fields for consistency
+      total_time: emp.total_time || 0,
+      total_break_time: emp.total_break_time || 0,
+      office_time: emp.office_time || 0,
+      unaccounted_time: 0 // Should always be 0 with correct calculation
     }));
 
     return {
@@ -262,7 +280,7 @@ const getEmployeeWorkHours = async (filters = {}) => {
 const getEmployeeBreakTime = async (filters = {}) => {
   try {
     const { start_date, end_date, hours, employee_name, camera, timezone = 'UTC' } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
     
     // Validate timezone
     if (!isValidTimezone(timezone)) {
@@ -281,7 +299,6 @@ const getEmployeeBreakTime = async (filters = {}) => {
       };
     }
 
-    const MIN_BREAK_DURATION_HOURS = 0.1667; // 10 minutes minimum break duration
     const breakData = [];
 
     // Process each employee's work sessions to find breaks
@@ -292,37 +309,8 @@ const getEmployeeBreakTime = async (filters = {}) => {
         continue;
       }
 
-      // Sort sessions by start time
-      const sortedSessions = sessions.sort((a, b) => new Date(a.first_seen) - new Date(b.first_seen));
-      const breakSessions = [];
-
-      // Find gaps between consecutive sessions
-      for (let i = 0; i < sortedSessions.length - 1; i++) {
-        const currentSession = sortedSessions[i];
-        const nextSession = sortedSessions[i + 1];
-        
-        const currentEnd = new Date(currentSession.last_seen);
-        const nextStart = new Date(nextSession.first_seen);
-        const breakDuration = (nextStart - currentEnd) / (1000 * 60 * 60); // Convert to hours
-
-        if (breakDuration >= MIN_BREAK_DURATION_HOURS) {
-          breakSessions.push({
-            break_start: currentSession.last_seen,
-            break_end: nextSession.first_seen,
-            duration_hours: breakDuration,
-            previous_session: {
-              camera: currentSession.camera,
-              zones: currentSession.zones,
-              ended_at: currentSession.last_seen
-            },
-            next_session: {
-              camera: nextSession.camera,
-              zones: nextSession.zones,
-              started_at: nextSession.first_seen
-            }
-          });
-        }
-      }
+      // Use shared break calculation logic
+      const breakSessions = calculateBreaksFromSessions(sessions);
 
       if (breakSessions.length > 0) {
         const totalBreakTime = breakSessions.reduce((sum, breakSession) => sum + breakSession.duration_hours, 0);
@@ -347,7 +335,10 @@ const getEmployeeBreakTime = async (filters = {}) => {
           shortest_break: shortestBreak,
           break_frequency: breakFrequency,
           break_efficiency: breakEfficiency,
+          // Include work hours context for consistency
           work_hours: employee.total_work_hours,
+          office_time: employee.office_time,
+          total_time: employee.total_time,
           arrival_time: employee.arrival_time,
           departure_time: employee.departure_time
         });
@@ -379,8 +370,8 @@ const getEmployeeBreakTime = async (filters = {}) => {
  */
 const getEmployeeAttendance = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, employee_name } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, employee_name, timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
@@ -481,8 +472,8 @@ const getEmployeeAttendance = async (filters = {}) => {
  */
 const getEmployeeActivityPatterns = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, employee_name, camera } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, employee_name, camera, timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
@@ -602,6 +593,70 @@ const getEmployeeActivityPatterns = async (filters = {}) => {
 };
 
 // Helper functions
+
+/**
+ * Calculate breaks from work sessions
+ * @param {Array} sessions - Array of work sessions sorted by start time
+ * @param {number} MIN_BREAK_MINUTES - Minimum break duration in minutes
+ * @returns {Array} Array of break periods
+ */
+const calculateBreaksFromSessions = (sessions, MIN_BREAK_MINUTES = 10) => {
+  if (!sessions || sessions.length < 2) {
+    return []; // Need at least 2 sessions to have a break
+  }
+
+  const MIN_BREAK_DURATION_HOURS = MIN_BREAK_MINUTES / 60;
+  const breakSessions = [];
+
+  // Sort sessions by start time to ensure proper order
+  const sortedSessions = sessions.sort((a, b) => new Date(a.first_seen) - new Date(b.first_seen));
+
+  // Find gaps between consecutive sessions
+  for (let i = 0; i < sortedSessions.length - 1; i++) {
+    const currentSession = sortedSessions[i];
+    const nextSession = sortedSessions[i + 1];
+    
+    const currentEnd = new Date(currentSession.last_seen);
+    const nextStart = new Date(nextSession.first_seen);
+    const breakDuration = (nextStart - currentEnd) / (1000 * 60 * 60); // Convert to hours
+
+    if (breakDuration >= MIN_BREAK_DURATION_HOURS) {
+      breakSessions.push({
+        break_start: currentSession.last_seen,
+        break_end: nextSession.first_seen,
+        duration_hours: breakDuration,
+        previous_session: {
+          camera: currentSession.camera,
+          zones: currentSession.zones,
+          ended_at: currentSession.last_seen
+        },
+        next_session: {
+          camera: nextSession.camera,
+          zones: nextSession.zones,
+          started_at: nextSession.first_seen
+        }
+      });
+    }
+  }
+
+  return breakSessions;
+};
+
+/**
+ * Validate time consistency for an employee
+ * @param {Object} employee - Employee data object
+ */
+const validateTimeConsistency = (employee) => {
+  const calculated = employee.office_time + employee.total_break_time;
+  const difference = Math.abs(employee.total_time - calculated);
+  if (difference > 0.01) { // Allow 36-second rounding tolerance
+    logger.warn(`Time inconsistency for ${employee.employee_name}: 
+      Total=${employee.total_time}h, 
+      Office=${employee.office_time}h, 
+      Break=${employee.total_break_time}h, 
+      Diff=${difference}h`);
+  }
+};
 
 /**
  * Calculate productivity score based on work hours and activity

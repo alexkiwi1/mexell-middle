@@ -79,6 +79,33 @@ const router = express.Router();
  *                           total_work_hours:
  *                             type: number
  *                             example: 8.5
+ *                             description: "Office time (productive work time excluding breaks)"
+ *                           total_time:
+ *                             type: number
+ *                             example: 10.5
+ *                             description: "Total time at office (arrival to departure)"
+ *                           total_break_time:
+ *                             type: number
+ *                             example: 2.0
+ *                             description: "Total break time in hours"
+ *                           office_time:
+ *                             type: number
+ *                             example: 8.5
+ *                             description: "Office time (same as total_work_hours for clarity)"
+ *                           unaccounted_time:
+ *                             type: number
+ *                             example: 0
+ *                             description: "Unaccounted time (should always be 0 with correct calculation)"
+ *                           arrival_time:
+ *                             type: string
+ *                             format: date-time
+ *                             example: "2025-01-15T09:00:00Z"
+ *                             description: "Employee arrival time"
+ *                           departure_time:
+ *                             type: string
+ *                             format: date-time
+ *                             example: "2025-01-15T19:30:00Z"
+ *                             description: "Employee departure time"
  *                           total_activity:
  *                             type: integer
  *                             example: 156
@@ -226,6 +253,28 @@ router.get('/api/employees/work-hours', employeesController.getEmployeeWorkHours
  *                           total_break_time:
  *                             type: number
  *                             example: 1.5
+ *                           work_hours:
+ *                             type: number
+ *                             example: 8.5
+ *                             description: "Office time (productive work time excluding breaks)"
+ *                           office_time:
+ *                             type: number
+ *                             example: 8.5
+ *                             description: "Office time (same as work_hours for clarity)"
+ *                           total_time:
+ *                             type: number
+ *                             example: 10.0
+ *                             description: "Total time at office (arrival to departure)"
+ *                           arrival_time:
+ *                             type: string
+ *                             format: date-time
+ *                             example: "2025-01-15T09:00:00Z"
+ *                             description: "Employee arrival time"
+ *                           departure_time:
+ *                             type: string
+ *                             format: date-time
+ *                             example: "2025-01-15T19:00:00Z"
+ *                             description: "Employee departure time"
  *                           break_sessions:
  *                             type: array
  *                             items:
