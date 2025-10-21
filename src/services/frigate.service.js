@@ -1,6 +1,7 @@
 const { query } = require('../config/postgres');
 const config = require('../config/config');
 const logger = require('../config/logger');
+const { convertDateRange, isValidTimezone, getTimezoneName } = require('./timezone.service');
 
 /**
  * Convert Unix timestamp to ISO string
@@ -28,26 +29,62 @@ const isoToUnix = (isoString) => {
  * @param {string} [params.start_time] - Start time (HH:MM:SS)
  * @param {string} [params.end_time] - End time (HH:MM:SS)
  * @param {number} [params.hours] - Hours to look back (fallback)
+ * @param {string} [params.timezone] - Timezone for date conversion (default: 'UTC')
  * @returns {Object} Object with startTime and endTime Unix timestamps
  */
 const parseDateTimeRange = (params = {}) => {
   const now = getCurrentUnixTime();
+  let timezone = params.timezone || 'UTC';
   let startTime, endTime;
 
-  if (params.start_date || params.end_date) {
-    // Use specific date range
-    if (params.start_date) {
-      const startDate = params.start_date.includes('T') ? params.start_date : `${params.start_date}T00:00:00.000Z`;
-      startTime = isoToUnix(startDate);
-    } else {
-      startTime = now - (24 * 3600); // Default to 24 hours ago if no start date
-    }
+  // Log input parameters for debugging
+  logger.debug(`parseDateTimeRange called with:`, {
+    start_date: params.start_date,
+    end_date: params.end_date,
+    hours: params.hours,
+    timezone: params.timezone
+  });
 
-    if (params.end_date) {
-      const endDate = params.end_date.includes('T') ? params.end_date : `${params.end_date}T23:59:59.999Z`;
-      endTime = isoToUnix(endDate);
-    } else {
+  // Validate timezone
+  if (!isValidTimezone(timezone)) {
+    logger.warn(`Invalid timezone: ${timezone}, falling back to UTC`);
+    timezone = 'UTC';
+  }
+
+  if (params.start_date || params.end_date) {
+    // Use specific date range with timezone conversion
+    if (params.start_date && params.end_date) {
+      // Both dates provided - check if it's a single-day query with date-only format
+      let processedStartDate = params.start_date;
+      let processedEndDate = params.end_date;
+      
+      // Detect single-day query with date-only format (no 'T' character)
+      if (params.start_date === params.end_date && !params.start_date.includes('T')) {
+        logger.info(`Single-day query detected: ${params.start_date}, expanding to full day range`);
+        // Expand to full day range: start at 00:00:00, end at 23:59:59.999
+        processedStartDate = `${params.start_date}T00:00:00`;
+        processedEndDate = `${params.end_date}T23:59:59.999`;
+        logger.debug(`Expanded single-day query: start=${processedStartDate}, end=${processedEndDate}`);
+      }
+      
+      // Use timezone-aware conversion
+      const dateRange = convertDateRange(processedStartDate, processedEndDate, timezone);
+      startTime = dateRange.startTime;
+      endTime = dateRange.endTime;
+      
+      logger.debug(`Date range conversion: startTime=${startTime}, endTime=${endTime}, timezone=${timezone}`);
+    } else if (params.start_date) {
+      // Only start date provided
+      const startDate = params.start_date.includes('T') ? params.start_date : `${params.start_date}T00:00:00`;
+      const dateRange = convertDateRange(startDate, startDate, timezone);
+      startTime = dateRange.startTime;
       endTime = now; // Default to now if no end date
+    } else if (params.end_date) {
+      // Only end date provided
+      const endDate = params.end_date.includes('T') ? params.end_date : `${params.end_date}T23:59:59`;
+      const dateRange = convertDateRange(endDate, endDate, timezone);
+      startTime = now - (24 * 3600); // Default to 24 hours ago if no start date
+      endTime = dateRange.endTime;
     }
   } else if (params.hours) {
     // Use hours lookback (existing behavior)
@@ -58,6 +95,15 @@ const parseDateTimeRange = (params = {}) => {
     startTime = now - (24 * 3600);
     endTime = now;
   }
+
+  // Log final converted timestamps for debugging
+  logger.debug(`parseDateTimeRange result:`, {
+    startTime,
+    endTime,
+    startTimeISO: new Date(startTime * 1000).toISOString(),
+    endTimeISO: new Date(endTime * 1000).toISOString(),
+    duration_hours: (endTime - startTime) / 3600
+  });
 
   return { startTime, endTime };
 };
@@ -358,6 +404,102 @@ const getRecentRecordings = async (options = {}) => {
   }
 };
 
+/**
+ * Get recording at specific timestamp with time window
+ * @param {Object} options - Options
+ * @param {string} options.camera - Camera name
+ * @param {number} options.timestamp - Unix timestamp
+ * @param {number} options.window - Time window in seconds (default: 2)
+ * @returns {Promise<Object>} Recording with video URL and time window
+ */
+const getRecordingAtTimestamp = async (options = {}) => {
+  try {
+    const { camera, timestamp, window = 2 } = options;
+
+    if (!camera || !timestamp) {
+      throw new Error('Camera and timestamp are required');
+    }
+
+    // Validate timestamp
+    const timestampNum = typeof timestamp === 'string' ? parseFloat(timestamp) : timestamp;
+    if (isNaN(timestampNum) || timestampNum <= 0) {
+      throw new Error('Invalid timestamp format');
+    }
+
+    // Query for recording containing the timestamp
+    const sql = `
+      SELECT id, camera, path, start_time, end_time, duration
+      FROM recordings
+      WHERE camera = $1 
+        AND start_time <= $2 
+        AND end_time >= $2
+      LIMIT 1
+    `;
+
+    const result = await query(sql, [camera, timestampNum]);
+    
+    if (result.length === 0) {
+      return {
+        found: false,
+        message: `No recording found for camera '${camera}' at timestamp ${timestampNum}`,
+        suggestions: [
+          'Check if the camera name is correct',
+          'Verify the timestamp is within recording range',
+          'Try a different time window'
+        ]
+      };
+    }
+
+    const recording = result[0];
+    const startTime = recording.start_time;
+    const endTime = recording.end_time;
+    const duration = recording.duration;
+
+    // Calculate offset within the recording
+    const offset = timestampNum - startTime;
+    
+    // Calculate time window (2 seconds before and after by default)
+    const startWindow = Math.max(0, offset - window);
+    const endWindow = Math.min(duration, offset + window);
+
+    // Generate video URL with time fragment
+    const videoUrl = `${generateMediaURL(recording.path)}#t=${startWindow.toFixed(1)},${endWindow.toFixed(1)}`;
+
+    return {
+      found: true,
+      recording_id: recording.id,
+      camera: recording.camera,
+      path: recording.path,
+      video_url: videoUrl,
+      exact_timestamp: timestampNum,
+      recording_start: startTime,
+      recording_end: endTime,
+      recording_duration: duration,
+      offset_in_recording: offset,
+      time_window: {
+        start_seconds: startWindow,
+        end_seconds: endWindow,
+        duration_seconds: endWindow - startWindow,
+        start_timestamp: startTime + startWindow,
+        end_timestamp: startTime + endWindow
+      },
+      playback_info: {
+        event_at_seconds: offset,
+        window_seconds: window,
+        total_clip_duration: endWindow - startWindow
+      }
+    };
+
+  } catch (error) {
+    logger.error('Error getting recording at timestamp', { 
+      error: error.message, 
+      camera: options.camera, 
+      timestamp: options.timestamp 
+    });
+    throw error;
+  }
+};
+
 module.exports = {
   unixToISO,
   unixToReadable,
@@ -370,4 +512,5 @@ module.exports = {
   getEvents,
   generateMediaURL,
   getRecentRecordings,
+  getRecordingAtTimestamp,
 };

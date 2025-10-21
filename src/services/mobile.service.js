@@ -19,8 +19,8 @@ const logger = require('../config/logger');
  * @returns {Object} - Mobile-optimized dashboard data
  */
 const getMobileDashboard = async (filters = {}) => {
-  const { start_date, end_date, hours } = filters;
-  const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+  const { start_date, end_date, hours, timezone = 'UTC' } = filters;
+  const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
   try {
     // Get basic stats with optimized queries
@@ -98,8 +98,8 @@ const getMobileDashboard = async (filters = {}) => {
  * @returns {Object} - Mobile-optimized violations data
  */
 const getMobileViolations = async (filters = {}) => {
-  const { start_date, end_date, hours, limit = 50, offset = 0 } = filters;
-  const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+  const { start_date, end_date, hours, limit = 50, offset = 0, timezone = 'UTC' } = filters;
+  const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
   try {
     const violations = await query(`
@@ -145,8 +145,8 @@ const getMobileViolations = async (filters = {}) => {
  * @returns {Object} - Mobile-optimized employee data
  */
 const getMobileEmployeeStatus = async (filters = {}) => {
-  const { start_date, end_date, hours } = filters;
-  const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+  const { start_date, end_date, hours, timezone = 'UTC' } = filters;
+  const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
   try {
     const employees = await query(`
@@ -184,8 +184,8 @@ const getMobileEmployeeStatus = async (filters = {}) => {
  * @returns {Object} - Mobile-optimized camera data
  */
 const getMobileCameraStatus = async (filters = {}) => {
-  const { start_date, end_date, hours } = filters;
-  const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+  const { start_date, end_date, hours, timezone = 'UTC' } = filters;
+  const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
   try {
     const cameras = await query(`
@@ -223,8 +223,8 @@ const getMobileCameraStatus = async (filters = {}) => {
  * @returns {Object} - Mobile notifications data
  */
 const getMobileNotifications = async (filters = {}) => {
-  const { start_date, end_date, hours, limit = 20 } = filters;
-  const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+  const { start_date, end_date, hours, limit = 20, timezone = 'UTC' } = filters;
+  const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
   try {
     const notifications = await query(`

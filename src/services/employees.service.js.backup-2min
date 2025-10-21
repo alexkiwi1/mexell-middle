@@ -101,13 +101,12 @@ const getEmployeeWorkHours = async (filters = {}) => {
         row.zones.forEach(zone => employeeData[employee].zones.add(zone));
       }
 
-      // Store detection data with face recognition info
+      // Store detection data
       employeeData[employee].detections.push({
         timestamp: row.timestamp,
         camera: row.camera,
         zones: row.zones || [],
-        confidence: parseFloat(row.confidence) || 0,
-        face_recognized_name: row.employee_name || null // Store face recognition data
+        confidence: parseFloat(row.confidence) || 0
       });
 
       if (!employeeData[employee].first_seen || row.timestamp < employeeData[employee].first_seen) {
@@ -192,13 +191,9 @@ const getEmployeeWorkHours = async (filters = {}) => {
       }
 
       // Calculate arrival and departure times (store as Unix timestamps for timezone conversion)
-      // Calculate cumulative desk time to determine arrival with face recognition validation
+      // Calculate cumulative desk time to determine arrival
       const MIN_CUMULATIVE_MINUTES = 2;
-      const deskTimeResult = calculateCumulativeDeskTime(
-        employee.detections, 
-        MIN_CUMULATIVE_MINUTES, 
-        employee.employee_name
-      );
+      const deskTimeResult = calculateCumulativeDeskTime(employee.detections, MIN_CUMULATIVE_MINUTES);
       employee.arrival_timestamp = deskTimeResult.arrivalTimestamp;
       employee.arrival_qualification = deskTimeResult; // Store for debugging
       
@@ -784,19 +779,16 @@ const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTi
 /**
  * Calculate cumulative desk time and find when employee reaches threshold
  * @param {Array} detections - All detections sorted by timestamp
- * @param {number} thresholdMinutes - Cumulative minutes required (default 2)
- * @param {string} employeeName - Employee name to match against face recognition
+ * @param {number} thresholdMinutes - Cumulative minutes required (default 1)
  * @returns {Object} { qualifies: boolean, arrivalTimestamp: number|null, totalDeskTime: number }
  */
-const calculateCumulativeDeskTime = (detections, thresholdMinutes = 2, employeeName = null) => {
+const calculateCumulativeDeskTime = (detections, thresholdMinutes = 1) => {
   const THRESHOLD_SECONDS = thresholdMinutes * 60;
-  const FACE_RECOGNITION_WINDOW = 30 * 60; // 30 minutes in seconds
   let cumulativeSeconds = 0;
   let lastDeskDetection = null;
   const GAP_TOLERANCE = 60; // Allow 60-second gaps in desk detections
   
-  for (let i = 0; i < detections.length; i++) {
-    const detection = detections[i];
+  for (const detection of detections) {
     const hasDeskZone = detection.zones && detection.zones.some(z => z.startsWith('desk_'));
     
     if (hasDeskZone) {
@@ -811,49 +803,12 @@ const calculateCumulativeDeskTime = (detections, thresholdMinutes = 2, employeeN
       
       // Check if we've reached the threshold
       if (cumulativeSeconds >= THRESHOLD_SECONDS) {
-        // Now check for face recognition within 30 minutes
-        const thresholdTimestamp = detection.timestamp;
-        const windowEnd = thresholdTimestamp + FACE_RECOGNITION_WINDOW;
-        
-        // Look ahead in detections for face recognition match
-        let faceRecognized = false;
-        let faceRecognitionTime = null;
-        
-        for (let j = i; j < detections.length; j++) {
-          const futureDetection = detections[j];
-          
-          // Stop if we've gone beyond the 30-minute window
-          if (futureDetection.timestamp > windowEnd) {
-            break;
-          }
-          
-          // Check if this detection has face recognition matching employee name
-          if (futureDetection.face_recognized_name && 
-              employeeName &&
-              futureDetection.face_recognized_name.toLowerCase() === employeeName.toLowerCase()) {
-            faceRecognized = true;
-            faceRecognitionTime = futureDetection.timestamp;
-            break;
-          }
-        }
-        
-        if (faceRecognized) {
-          const timeDiff = faceRecognitionTime - thresholdTimestamp;
-          return {
-            qualifies: true,
-            arrivalTimestamp: detection.timestamp,
-            totalDeskTime: cumulativeSeconds,
-            thresholdReached: `Cumulative ${(cumulativeSeconds / 60).toFixed(1)} minutes at desk + face recognized after ${(timeDiff / 60).toFixed(1)} minutes`
-          };
-        } else {
-          // Reached desk time threshold but no face recognition within 30 minutes
-          return {
-            qualifies: false,
-            arrivalTimestamp: null,
-            totalDeskTime: cumulativeSeconds,
-            reason: `${(cumulativeSeconds / 60).toFixed(1)} minutes at desk BUT no face recognition within 30 minutes (likely cleaner/visitor)`
-          };
-        }
+        return {
+          qualifies: true,
+          arrivalTimestamp: detection.timestamp,
+          totalDeskTime: cumulativeSeconds,
+          thresholdReached: `Cumulative ${(cumulativeSeconds / 60).toFixed(1)} minutes at desk`
+        };
       }
     }
   }

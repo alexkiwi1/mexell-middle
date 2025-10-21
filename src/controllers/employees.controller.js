@@ -15,7 +15,8 @@ const getEmployeeWorkHoursController = async (req, res, next) => {
       end_date: req.query.end_date,
       hours: req.query.hours ? parseInt(req.query.hours, 10) : 24,
       employee_name: req.query.employee_name,
-      camera: req.query.camera
+      camera: req.query.camera,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const workHoursData = await employeesService.getEmployeeWorkHours(filters);
@@ -45,7 +46,8 @@ const getEmployeeBreakTimeController = async (req, res, next) => {
       end_date: req.query.end_date,
       hours: req.query.hours ? parseInt(req.query.hours, 10) : 24,
       employee_name: req.query.employee_name,
-      camera: req.query.camera
+      camera: req.query.camera,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const breakTimeData = await employeesService.getEmployeeBreakTime(filters);
@@ -104,7 +106,8 @@ const getEmployeeActivityPatternsController = async (req, res, next) => {
       end_date: req.query.end_date,
       hours: req.query.hours ? parseInt(req.query.hours, 10) : 24,
       employee_name: req.query.employee_name,
-      camera: req.query.camera
+      camera: req.query.camera,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const activityPatternsData = await employeesService.getEmployeeActivityPatterns(filters);

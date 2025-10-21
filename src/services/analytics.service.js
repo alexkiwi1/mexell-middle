@@ -21,8 +21,8 @@ const logger = require('../config/logger');
  */
 const getDashboardData = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, camera } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, camera, timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     // Parallel queries for dashboard data
     const [
@@ -114,8 +114,8 @@ const getDashboardData = async (filters = {}) => {
  */
 const getTrendAnalysis = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, camera, metric, granularity = 'hourly' } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, camera, metric, granularity = 'hourly', timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     let timeGrouping;
     let timeFormat;
@@ -246,8 +246,8 @@ const getTrendAnalysis = async (filters = {}) => {
  */
 const getPerformanceMetrics = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, camera, employee_name } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, camera, employee_name, timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     // Get comprehensive performance data
     const [
@@ -302,8 +302,8 @@ const getPerformanceMetrics = async (filters = {}) => {
  */
 const getPredictiveAnalytics = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, camera, prediction_type = 'violations' } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, camera, prediction_type = 'violations', timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     // Get historical data for prediction
     const historicalData = await getHistoricalData(startTime, endTime, camera, prediction_type);
@@ -356,10 +356,11 @@ const getCustomReport = async (filters = {}) => {
       camera, 
       employee_name,
       report_type = 'comprehensive',
-      include_charts = true
+      include_charts = true,
+      timezone = 'UTC'
     } = filters;
     
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     // Generate report based on type
     let reportData;

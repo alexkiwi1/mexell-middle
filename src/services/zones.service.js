@@ -21,8 +21,8 @@ const logger = require('../config/logger');
  */
 const getDeskOccupancy = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, camera, zone } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, camera, zone, timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
@@ -181,8 +181,8 @@ const getDeskOccupancy = async (filters = {}) => {
  */
 const getZoneUtilization = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, camera } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, camera, timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
@@ -308,8 +308,8 @@ const getZoneUtilization = async (filters = {}) => {
  */
 const getEmployeeZonePreferences = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, employee_name, camera } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, employee_name, camera, timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2
@@ -445,8 +445,8 @@ const getEmployeeZonePreferences = async (filters = {}) => {
  */
 const getZoneActivityPatterns = async (filters = {}) => {
   try {
-    const { start_date, end_date, hours, camera, zone } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { start_date, end_date, hours, camera, zone, timezone = 'UTC' } = filters;
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
 
     let whereClause = `
       WHERE timestamp >= $1 AND timestamp <= $2

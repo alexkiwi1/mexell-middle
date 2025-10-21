@@ -48,11 +48,12 @@ const listCameras = async (req, res, next) => {
  */
 const getCameraSummaryController = async (req, res, next) => {
   try {
-    const { hours, start_date, end_date } = req.query;
+    const { hours, start_date, end_date, timezone } = req.query;
     const options = {
       hours: parseInt(hours, 10) || undefined,
       start_date: start_date || undefined,
-      end_date: end_date || undefined
+      end_date: end_date || undefined,
+      timezone: timezone || 'UTC'
     };
 
     const summaries = await getCameraSummary(options);
@@ -86,11 +87,12 @@ const getCameraSummaryController = async (req, res, next) => {
 const getCameraSummaryByIdController = async (req, res, next) => {
   try {
     const { camera_name } = req.params;
-    const { hours, start_date, end_date } = req.query;
+    const { hours, start_date, end_date, timezone } = req.query;
     const options = {
       hours: parseInt(hours, 10) || undefined,
       start_date: start_date || undefined,
-      end_date: end_date || undefined
+      end_date: end_date || undefined,
+      timezone: timezone || 'UTC'
     };
 
     const summary = await getCameraSummaryById(camera_name, options);
@@ -177,14 +179,15 @@ const getCameraStatusController = async (req, res, next) => {
 const getCameraViolationsController = async (req, res, next) => {
   try {
     const { camera_name } = req.params;
-    const { hours, limit, start_date, end_date } = req.query;
+    const { hours, limit, start_date, end_date, timezone } = req.query;
     
     // Parse date/time range
     const { parseDateTimeRange } = require('../services/frigate.service');
     const { startTime, endTime } = parseDateTimeRange({
       hours: parseInt(hours, 10) || 24,
       start_date: start_date || undefined,
-      end_date: end_date || undefined
+      end_date: end_date || undefined,
+      timezone: timezone || 'UTC'
     });
 
     const filters = {
@@ -226,14 +229,15 @@ const getCameraViolationsController = async (req, res, next) => {
  */
 const getViolationsSummaryByEmployeeController = async (req, res, next) => {
   try {
-    const { hours, start_date, end_date, camera } = req.query;
+    const { hours, start_date, end_date, camera, timezone } = req.query;
     
     // Parse date/time range
     const { parseDateTimeRange } = require('../services/frigate.service');
     const { startTime, endTime } = parseDateTimeRange({
       hours: parseInt(hours, 10) || 24,
       start_date: start_date || undefined,
-      end_date: end_date || undefined
+      end_date: end_date || undefined,
+      timezone: timezone || 'UTC'
     });
 
     const filters = {
@@ -274,14 +278,15 @@ const getViolationsSummaryByEmployeeController = async (req, res, next) => {
 const getViolationsByEmployeeController = async (req, res, next) => {
   try {
     const { employee_name } = req.params;
-    const { hours, start_date, end_date, camera, limit } = req.query;
+    const { hours, start_date, end_date, camera, limit, timezone } = req.query;
     
     // Parse date/time range
     const { parseDateTimeRange } = require('../services/frigate.service');
     const { startTime, endTime } = parseDateTimeRange({
       hours: parseInt(hours, 10) || 24,
       start_date: start_date || undefined,
-      end_date: end_date || undefined
+      end_date: end_date || undefined,
+      timezone: timezone || 'UTC'
     });
 
     const filters = {

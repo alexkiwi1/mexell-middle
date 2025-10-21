@@ -48,7 +48,7 @@ const generateEmployeeReport = async (filters = {}) => {
       include_breakdown = true
     } = filters;
     
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
     
     // Validate timezone
     if (!isValidTimezone(timezone)) {
@@ -184,7 +184,7 @@ const generateViolationReport = async (filters = {}) => {
       include_media = true
     } = filters;
     
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
     
     // Get violations data
     const violationsData = await getViolationsData(filters);
@@ -265,7 +265,7 @@ const generateComprehensiveReport = async (filters = {}) => {
       include_media = true
     } = filters;
     
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date, hours);
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, hours, timezone });
     
     // Get all data
     const [workHoursData, breakTimeData, violationsData, activityData, cameraData] = await Promise.all([
@@ -399,7 +399,7 @@ const getActivityPatterns = async (filters) => {
 const getEmployeeActivityPatterns = async (filters) => {
   try {
     const { start_date, end_date, timezone = 'UTC' } = filters;
-    const { startTime, endTime } = parseDateTimeRange(start_date, end_date);
+    const { startTime, endTime } = parseDateTimeRange({ start_date, end_date, timezone });
     
     const queryText = `
       SELECT 

@@ -7,6 +7,9 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URL=mongodb://mongodb:27017/node-boilerplate
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - PORT=5002
       - FRIGATE_DB_HOST=10.0.20.6
       - FRIGATE_DB_PORT=5433
@@ -18,6 +21,7 @@ services:
       - '5002:5002'
     depends_on:
       - mongodb
+      - redis
     networks:
       - node-network
 
@@ -30,8 +34,19 @@ services:
     networks:
       - node-network
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    networks:
+      - node-network
+    command: redis-server --appendonly yes
+
 volumes:
   dbdata:
+  redisdata:
 
 networks:
   node-network:

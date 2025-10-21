@@ -24,7 +24,8 @@ const getMobileDashboardController = async (req, res) => {
     const filters = {
       start_date: req.query.start_date,
       end_date: req.query.end_date,
-      hours: req.query.hours ? parseInt(req.query.hours) : 24
+      hours: req.query.hours ? parseInt(req.query.hours) : 24,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const data = await mobileService.getMobileDashboard(filters);
@@ -88,7 +89,8 @@ const getMobileEmployeeStatusController = async (req, res) => {
     const filters = {
       start_date: req.query.start_date,
       end_date: req.query.end_date,
-      hours: req.query.hours ? parseInt(req.query.hours) : 24
+      hours: req.query.hours ? parseInt(req.query.hours) : 24,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const data = await mobileService.getMobileEmployeeStatus(filters);
@@ -119,7 +121,8 @@ const getMobileCameraStatusController = async (req, res) => {
     const filters = {
       start_date: req.query.start_date,
       end_date: req.query.end_date,
-      hours: req.query.hours ? parseInt(req.query.hours) : 24
+      hours: req.query.hours ? parseInt(req.query.hours) : 24,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const data = await mobileService.getMobileCameraStatus(filters);

@@ -87,4 +87,12 @@ module.exports = {
     password: envVars.FRIGATE_DB_PASSWORD,
     videoServerUrl: envVars.VIDEO_SERVER_URL,
   },
+  // Redis Configuration
+  redis: {
+    host: envVars.REDIS_HOST,
+    port: envVars.REDIS_PORT,
+    password: envVars.REDIS_PASSWORD,
+    db: envVars.REDIS_DB,
+    cluster: envVars.REDIS_CLUSTER,
+  },
 };

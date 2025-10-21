@@ -1,12 +1,13 @@
 const Redis = require('ioredis');
 const logger = require('./logger');
+const config = require('./config');
 
 // Redis configuration
 const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || null,
-  db: process.env.REDIS_DB || 0,
+  host: config.redis.host,
+  port: config.redis.port,
+  password: config.redis.password || null,
+  db: config.redis.db,
   retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3,
   lazyConnect: true,
@@ -22,10 +23,10 @@ const redisConfig = {
   family: 4, // 4 (IPv4) or 6 (IPv6)
   keyPrefix: 'frigate:',
   // Cluster settings (if using Redis Cluster)
-  enableCluster: process.env.REDIS_CLUSTER === 'true',
+  enableCluster: config.redis.cluster,
   clusterNodes: process.env.REDIS_CLUSTER_NODES ? 
     process.env.REDIS_CLUSTER_NODES.split(',') : 
-    ['redis://localhost:6379'],
+    [`redis://${config.redis.host}:${config.redis.port}`],
 };
 
 // Create Redis client

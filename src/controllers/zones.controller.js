@@ -15,7 +15,8 @@ const getDeskOccupancyController = async (req, res, next) => {
       end_date: req.query.end_date,
       hours: req.query.hours ? parseInt(req.query.hours, 10) : 24,
       camera: req.query.camera,
-      zone: req.query.zone
+      zone: req.query.zone,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const occupancyData = await zonesService.getDeskOccupancy(filters);
@@ -104,7 +105,8 @@ const getZoneActivityPatternsController = async (req, res, next) => {
       end_date: req.query.end_date,
       hours: req.query.hours ? parseInt(req.query.hours, 10) : 24,
       camera: req.query.camera,
-      zone: req.query.zone
+      zone: req.query.zone,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const patternsData = await zonesService.getZoneActivityPatterns(filters);

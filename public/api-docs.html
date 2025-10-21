@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Tracking API - Complete Documentation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .content {
+            padding: 40px;
+        }
+        .category {
+            margin-bottom: 40px;
+        }
+        .category h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .endpoint:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .endpoint-header {
+            padding: 15px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .method {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 15px;
+            text-transform: uppercase;
+        }
+        .get { background: #d4edda; color: #155724; }
+        .post { background: #cce5ff; color: #004085; }
+        .put { background: #fff3cd; color: #856404; }
+        .delete { background: #f8d7da; color: #721c24; }
+        .path {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        .endpoint-body {
+            padding: 20px;
+        }
+        .summary {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .description {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        .parameters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .param-title {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .param-list {
+            list-style: none;
+        }
+        .param-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .param-name {
+            font-family: 'Courier New', monospace;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .param-type {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .server-info {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .server-url {
+            font-family: 'Courier New', monospace;
+            background: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Employee Tracking API</h1>
+            <p>Comprehensive employee monitoring and analytics API</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">69</div>
+                <div class="stat-label">Total Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">14</div>
+                <div class="stat-label">API Categories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">v1.7.0</div>
+                <div class="stat-label">API Version</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">HTTP Methods</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="server-info">
+                <h3>🌐 Server Information</h3>
+                <p><strong>Base URL:</strong> <span class="server-url">http://10.100.6.2:5002/v1</span></p>
+                <p><strong>Development:</strong> <span class="server-url">http://localhost:5002/v1</span></p>
+                <p><strong>Contact:</strong> API Support (support@mexell.com)</p>
+            </div>
+
+            <div class="category">
+                <h2>📊 Analytics</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/analytics/dashboard</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Comprehensive Dashboard Data</div>
+                        <div class="description">Get comprehensive dashboard with overview, trends, and insights</div>
+                        <div class="parameters">
+                            <div class="param-title">Query Parameters:</div>
+                            <ul class="param-list">
+                                <li class="param-item"><span class="param-name">start_date</span> <span class="param-type">(string, date)</span> - Start date (YYYY-MM-DD)</li>
+                                <li class="param-item"><span class="param-name">end_date</span> <span class="param-type">(string, date)</span> - End date (YYYY-MM-DD)</li>
+                                <li class="param-item"><span class="param-name">hours</span> <span class="param-type">(integer, default: 24)</span> - Hours to look back</li>
+                                <li class="param-item"><span class="param-name">camera</span> <span class="param-type">(string)</span> - Filter by specific camera</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/analytics/trends</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Trend Analysis</div>
+                        <div class="description">Get trend analysis data with customizable granularity</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/analytics/performance</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Performance Metrics</div>
+                        <div class="description">Get comprehensive performance metrics and scoring</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/analytics/predictive</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Predictive Analytics</div>
+                        <div class="description">Get predictive analytics and forecasting data</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/analytics/reports</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Custom Report</div>
+                        <div class="description">Generate custom reports with various formats and data</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>👥 Employees</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/employees/work-hours</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Employee Work Hours</div>
+                        <div class="description">Get work hours analysis for employees including arrival, departure, and total hours worked</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/employees/break-time</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Employee Break Time Analysis</div>
+                        <div class="description">Get detailed break time analysis for employees including break duration, frequency, and patterns</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/employees/attendance</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Employee Attendance</div>
+                        <div class="description">Get attendance summary including who arrived, when, and attendance patterns</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/employees/activity-patterns</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Employee Activity Patterns</div>
+                        <div class="description">Get activity patterns and work style analysis for employees</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>🏢 Zones</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/zones/desk-occupancy</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Desk Occupancy Analysis</div>
+                        <div class="description">Get desk occupancy data showing which desks are occupied and by whom</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/zones/utilization</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Zone Utilization Analysis</div>
+                        <div class="description">Get zone utilization and activity analysis</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/zones/employee-preferences</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Employee Zone Preferences</div>
+                        <div class="description">Get employee zone preferences and mobility patterns</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/zones/activity-patterns</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Zone Activity Patterns</div>
+                        <div class="description">Get zone activity patterns and peak time analysis</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>📹 Cameras</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/cameras/list</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">List All Cameras</div>
+                        <div class="description">Get list of all available cameras with their status and configuration</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/cameras/summary</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Camera Summary</div>
+                        <div class="description">Get summary of all cameras with activity metrics and violations</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>🔐 Authentication</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/auth/register</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">User Registration</div>
+                        <div class="description">Register a new user account</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/auth/login</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">User Login</div>
+                        <div class="description">Authenticate user and get access token</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/auth/logout</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">User Logout</div>
+                        <div class="description">Logout user and invalidate token</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>🌐 WebSocket</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/websocket/stats</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get WebSocket Statistics</div>
+                        <div class="description">Retrieve current WebSocket connection statistics</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/websocket/activity</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Real-time Activity</div>
+                        <div class="description">Get a summary of recent activity including violations and employee activity</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>📱 Mobile</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/mobile/dashboard</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Mobile Dashboard</div>
+                        <div class="description">Get mobile-optimized dashboard data</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/mobile/violations</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Mobile Violations</div>
+                        <div class="description">Get violations data optimized for mobile devices</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>📊 Performance</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/performance/metrics</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Performance Metrics</div>
+                        <div class="description">Get system performance metrics and statistics</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/performance/summary</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Performance Summary</div>
+                        <div class="description">Get comprehensive performance summary</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>📋 Reports</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/reports/employee</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Employee Reports</div>
+                        <div class="description">Generate employee-specific reports</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/reports/violations</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Violation Reports</div>
+                        <div class="description">Generate violation reports and analytics</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>⏰ Timezone</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/timezone/list</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">List Timezones</div>
+                        <div class="description">Get list of supported timezones</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/timezone/convert/{timestamp}</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Convert Timestamp</div>
+                        <div class="description">Convert timestamp between timezones</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>👤 Users</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/users</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">List Users</div>
+                        <div class="description">Get list of all users</div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/users/{id}</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get User by ID</div>
+                        <div class="description">Get specific user information</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>🎥 Media</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/recent-media/clips</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Get Recent Media Clips</div>
+                        <div class="description">Get recent media clips with metadata and streaming URLs</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category">
+                <h2>❤️ Health</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/health</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="summary">Health Check</div>
+                        <div class="description">Check API health and database connectivity</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h3>📞 Support</h3>
+            <p>API Support: support@mexell.com</p>
+            <p>Version: 1.7.0 | License: MIT</p>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+

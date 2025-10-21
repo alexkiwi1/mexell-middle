@@ -14,7 +14,8 @@ const getDashboardDataController = async (req, res, next) => {
       start_date: req.query.start_date,
       end_date: req.query.end_date,
       hours: req.query.hours ? parseInt(req.query.hours, 10) : 24,
-      camera: req.query.camera
+      camera: req.query.camera,
+      timezone: req.query.timezone || 'UTC'
     };
 
     const dashboardData = await analyticsService.getDashboardData(filters);

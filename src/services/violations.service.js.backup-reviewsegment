@@ -182,69 +182,6 @@ const generateMediaUrlsFromReviewsegment = async (violation) => {
 };
 
 /**
- * Generate media URLs from event table (fast, synchronous - no API calls)
- * Uses Frigate's native event API for thumbnails
- * @param {Object} violation - Violation data from event table
- * @returns {Object} Media URLs with confidence data
- */
-const generateMediaUrlsFromEvent = (violation) => {
-  const videoServerUrl = config.frigate.videoServerUrl;
-  const frigateApiUrl = 'http://10.0.20.6:5000';  // Frigate API URL
-  const timestamp = violation.timestamp;
-  const camera = violation.camera;
-  const eventId = violation.source_id;
-  
-  // Extract confidence data from violation
-  const confidence = violation.confidence ? parseFloat(violation.confidence) : null;
-  const topScore = violation.top_score ? parseFloat(violation.top_score) : null;
-  const detectorType = violation.detector_type || 'unknown';
-  const modelHash = violation.model_hash || null;
-  
-  // Determine the best confidence score to use
-  const confidenceScore = confidence || topScore || 0.7;
-  const confidenceSource = confidence ? 'frigate_score' : 
-                           topScore ? 'frigate_top_score' : 
-                           'default_estimate';
-  
-  // Thumbnail: Use Frigate's event thumbnail API (always works)
-  const thumbnailUrl = `${frigateApiUrl}/api/events/${eventId}/thumbnail.jpg`;
-  
-  // Snapshot: Use Frigate's event snapshot API (full resolution with bounding boxes)
-  const snapshotUrl = `${frigateApiUrl}/api/events/${eventId}/snapshot.jpg`;
-  
-  // Video: Use our recording timestamp API (frontend can call this to get the video URL)
-  const videoApiPath = `/v1/api/recordings/at-time?camera=${camera}&timestamp=${timestamp}&window=2`;
-  
-  return {
-    thumbnail_url: thumbnailUrl,
-    snapshot_url: snapshotUrl,
-    video_api_path: videoApiPath,
-    timestamp: timestamp,
-    camera: camera,
-    violation_id: eventId,
-    event_id: eventId,
-    severity: 'alert',
-    has_clip: violation.has_clip || 0,
-    has_snapshot: violation.has_snapshot || 1,
-    // Confidence data
-    confidence: {
-      score: confidenceScore,
-      source: confidenceSource,
-      frigate_score: confidence,
-      frigate_top_score: topScore,
-      detector_type: detectorType,
-      model_hash: modelHash,
-      note: confidenceSource === 'default_estimate' ? 
-            'Using estimated confidence (no Frigate score available)' : 
-            'Using actual Frigate confidence score'
-    },
-    note: "Using Frigate event API for thumbnails and snapshots. Video URL available via video_api_path.",
-    frigate_api_url: frigateApiUrl,
-    video_server_url: videoServerUrl
-  };
-};
-
-/**
  * Generate media URLs for violations (fast, no HTTP requests)
  * @param {Object} violation - Violation data from database
  * @returns {Object} Media URLs
@@ -550,73 +487,82 @@ const getCellPhoneViolations = async (filters = {}) => {
     let params = [];
     let paramCount = 0;
 
-    // Filter for cell phone label
-    whereConditions.push(`e.label = 'cell phone'`);
-
     if (filters.camera) {
       paramCount++;
-      whereConditions.push(`e.camera = $${paramCount}`);
+      whereConditions.push(`rs.camera = $${paramCount}`);
       params.push(filters.camera);
     }
 
     if (filters.startTime) {
       paramCount++;
-      whereConditions.push(`e.start_time >= $${paramCount}`);
+      whereConditions.push(`rs.start_time >= $${paramCount}`);
       params.push(filters.startTime);
     }
 
     if (filters.endTime) {
       paramCount++;
-      whereConditions.push(`e.start_time <= $${paramCount}`);
+      whereConditions.push(`rs.start_time <= $${paramCount}`);
       params.push(filters.endTime);
     }
+
+    // Filter for violations (alert or detection severity)
+    whereConditions.push(`(rs.severity = 'alert' OR rs.severity = 'detection')`);
+    
+    // Filter for cell phone detections specifically
+    whereConditions.push(`(rs.data->'objects' ? 'cell phone' OR rs.data->'objects' ? 'cell_phone' OR rs.data->'objects' ? 'phone')`);
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
     const limitClause = filters.limit ? `LIMIT ${filters.limit}` : 'LIMIT 100';
 
     const sql = `
       SELECT 
-        e.start_time as timestamp,
-        e.camera,
-        e.id as source_id,
-        e.sub_label as face_employee_name,
-        e.zones as zones,
-        e.label as detected_label,
-        (e.data->>'score')::FLOAT as confidence,
-        (e.data->>'top_score')::FLOAT as top_score,
-        e.model_hash,
-        e.detector_type,
-        e.region,
-        e.box,
-        e.area,
-        e.thumbnail,
-        e.has_clip,
-        e.has_snapshot,
-        e.data
-      FROM event e
+        rs.start_time as timestamp,
+        rs.camera,
+        rs.id as source_id,
+        rs.data->'sub_label'->>0 as face_employee_name,
+        rs.data->'zones' as zones,
+        rs.data->'objects' as objects,
+        rs.data->>'score' as confidence,
+        rs.data->>'top_score' as top_score,
+        rs.data->>'label' as detected_label,
+        rs.data->>'model_hash' as model_hash,
+        rs.data->>'detector_type' as detector_type,
+        rs.data->>'region' as region,
+        rs.data->>'box' as box,
+        rs.data->>'area' as area,
+        rs.severity,
+        rs.thumb_path,
+        rs.data as raw_data
+      FROM reviewsegment rs
       ${whereClause}
-      ORDER BY e.start_time DESC
+      ORDER BY rs.start_time DESC
       ${limitClause}
     `;
 
     const result = await query(sql, params);
     
     // Process violations and assign employees using simplified desk-zone assignment
-    const violations = result.map((violation, index) => {
+    const violations = await Promise.all(result.map(async (violation, index) => {
       const zones = violation.zones || [];
-      const faceEmployeeName = violation.sub_label || violation.face_employee_name;
+      const faceEmployeeName = violation.face_employee_name;
       const deskEmployeeName = getEmployeeFromDeskZone(zones);
       const violationId = violation.source_id || 'unknown';
       
       // Use simplified assignment - desk zone only
       const assignment = getSimpleEmployeeAssignment(violation);
       
-      // Generate media URLs from event table (fast, no async calls)
-      const mediaUrls = generateMediaUrlsFromEvent(violation);
+      // Generate media URLs using actual thumb_path from reviewsegment + working video URL
+      const mediaUrls = await generateMediaUrlsFromReviewsegment(violation);
 
-      // Extract confidence score from event table (real Frigate scores)
+      // Extract confidence score from event table
       const confidenceScore = violation.confidence ? parseFloat(violation.confidence) : 
-                             violation.top_score ? parseFloat(violation.top_score) : 0.7;
+                             violation.top_score ? parseFloat(violation.top_score) : 
+                             // Default confidence based on severity
+                             violation.severity === 'alert' ? 0.9 : 
+                             violation.severity === 'detection' ? 0.7 : 0.5;
+
+      // Note: Confidence scores from Frigate are not available in stored violations
+      // Using severity-based defaults: alert=0.9, detection=0.7, other=0.5
 
       return {
         timestamp: unixToISO(violation.timestamp),
@@ -629,23 +575,21 @@ const getCellPhoneViolations = async (filters = {}) => {
         faceEmployeeName,
         deskEmployeeName: deskEmployeeName || null,
         zones: zones,
-        objects: [violation.detected_label],
+        objects: violation.objects || [],
         confidence: confidenceScore,
-        frigateScore: confidenceScore,
-        confidenceNote: violation.confidence || violation.top_score ? 
-                       'Actual Frigate confidence score from event table' : 
-                       'Default confidence score',
+        frigateScore: confidenceScore, // Alias for clarity
+        confidenceNote: violation.confidence || violation.frigate_confidence || violation.top_score ? 
+                       'Actual Frigate confidence score' : 
+                       'Estimated based on severity (alert=0.9, detection=0.7)',
         detectedLabel: violation.detected_label,
-        severity: 'alert',
+        severity: violation.severity,
         detectorType: violation.detector_type,
         modelHash: violation.model_hash,
         type: 'cell_phone',
-        hasClip: violation.has_clip,
-        hasSnapshot: violation.has_snapshot,
         // Media URLs
         media: mediaUrls
       };
-    });
+    }));
 
     return violations;
   } catch (error) {

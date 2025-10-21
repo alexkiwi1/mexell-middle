@@ -101,13 +101,12 @@ const getEmployeeWorkHours = async (filters = {}) => {
         row.zones.forEach(zone => employeeData[employee].zones.add(zone));
       }
 
-      // Store detection data with face recognition info
+      // Store detection data
       employeeData[employee].detections.push({
         timestamp: row.timestamp,
         camera: row.camera,
         zones: row.zones || [],
-        confidence: parseFloat(row.confidence) || 0,
-        face_recognized_name: row.employee_name || null // Store face recognition data
+        confidence: parseFloat(row.confidence) || 0
       });
 
       if (!employeeData[employee].first_seen || row.timestamp < employeeData[employee].first_seen) {
@@ -192,38 +191,19 @@ const getEmployeeWorkHours = async (filters = {}) => {
       }
 
       // Calculate arrival and departure times (store as Unix timestamps for timezone conversion)
-      // Calculate cumulative desk time to determine arrival with face recognition validation
-      const MIN_CUMULATIVE_MINUTES = 2;
-      const deskTimeResult = calculateCumulativeDeskTime(
-        employee.detections, 
-        MIN_CUMULATIVE_MINUTES, 
-        employee.employee_name
-      );
-      employee.arrival_timestamp = deskTimeResult.arrivalTimestamp;
-      employee.arrival_qualification = deskTimeResult; // Store for debugging
-      
-      // CRITICAL: Only set departure if there's a qualifying arrival
-      // If no arrival, then no departure (employee never truly "arrived" at work)
-      employee.departure_timestamp = employee.arrival_timestamp && workSessions.length > 0 
-        ? workSessions[workSessions.length - 1].end_time 
-        : null;
+      employee.arrival_timestamp = workSessions.length > 0 ? workSessions[0].start_time : null;
+      employee.departure_timestamp = workSessions.length > 0 ? workSessions[workSessions.length - 1].end_time : null;
       
       // Calculate total time at office (arrival to departure)
-      // Use first detection as fallback if no qualifying arrival for calculation purposes only
-      const effectiveArrivalTime = employee.arrival_timestamp || 
-        (workSessions.length > 0 ? workSessions[0].start_time : null);
-      const effectiveDepartureTime = employee.departure_timestamp || 
-        (workSessions.length > 0 ? workSessions[workSessions.length - 1].end_time : null);
-        
-      employee.total_time = effectiveArrivalTime && effectiveDepartureTime 
-        ? (effectiveDepartureTime - effectiveArrivalTime) / 3600 
+      employee.total_time = employee.arrival_timestamp && employee.departure_timestamp 
+        ? (employee.departure_timestamp - employee.arrival_timestamp) / 3600 
         : 0;
 
       // Calculate break time using presence/absence logic with desk occupancy
       const breakCalculation = calculateBreaksFromDetections(
         employee.detections, 
-        effectiveArrivalTime,  // Use effective time instead of arrival_timestamp
-        effectiveDepartureTime,
+        employee.arrival_timestamp, 
+        employee.departure_timestamp,
         30, // 30-minute break threshold
         employee.employee_name
       );
@@ -245,13 +225,6 @@ const getEmployeeWorkHours = async (filters = {}) => {
       employee.last_seen = employee.departure_time;
 
       logger.info(`Employee ${employee.employee_name}: ${workSessions.length} sessions, Total=${employee.total_time.toFixed(2)}h, Office=${employee.office_time.toFixed(2)}h, Break=${employee.total_break_time.toFixed(2)}h`);
-      
-      // Log arrival qualification status
-      if (deskTimeResult.qualifies) {
-        logger.info(`Employee ${employee.employee_name}: Arrival qualified - ${deskTimeResult.thresholdReached}`);
-      } else {
-        logger.warn(`Employee ${employee.employee_name}: No qualifying arrival - ${deskTimeResult.reason} (arrival and departure set to null)`);
-      }
 
       // Store work sessions with timezone conversion
       employee.sessions = workSessions.map(session => ({
@@ -782,92 +755,6 @@ const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTi
 };
 
 /**
- * Calculate cumulative desk time and find when employee reaches threshold
- * @param {Array} detections - All detections sorted by timestamp
- * @param {number} thresholdMinutes - Cumulative minutes required (default 2)
- * @param {string} employeeName - Employee name to match against face recognition
- * @returns {Object} { qualifies: boolean, arrivalTimestamp: number|null, totalDeskTime: number }
- */
-const calculateCumulativeDeskTime = (detections, thresholdMinutes = 2, employeeName = null) => {
-  const THRESHOLD_SECONDS = thresholdMinutes * 60;
-  const FACE_RECOGNITION_WINDOW = 30 * 60; // 30 minutes in seconds
-  let cumulativeSeconds = 0;
-  let lastDeskDetection = null;
-  const GAP_TOLERANCE = 60; // Allow 60-second gaps in desk detections
-  
-  for (let i = 0; i < detections.length; i++) {
-    const detection = detections[i];
-    const hasDeskZone = detection.zones && detection.zones.some(z => z.startsWith('desk_'));
-    
-    if (hasDeskZone) {
-      if (lastDeskDetection) {
-        const gap = detection.timestamp - lastDeskDetection.timestamp;
-        // Only count time if gap is reasonable (continuous-ish desk activity)
-        if (gap <= GAP_TOLERANCE) {
-          cumulativeSeconds += gap;
-        }
-      }
-      lastDeskDetection = detection;
-      
-      // Check if we've reached the threshold
-      if (cumulativeSeconds >= THRESHOLD_SECONDS) {
-        // Now check for face recognition within 30 minutes
-        const thresholdTimestamp = detection.timestamp;
-        const windowEnd = thresholdTimestamp + FACE_RECOGNITION_WINDOW;
-        
-        // Look ahead in detections for face recognition match
-        let faceRecognized = false;
-        let faceRecognitionTime = null;
-        
-        for (let j = i; j < detections.length; j++) {
-          const futureDetection = detections[j];
-          
-          // Stop if we've gone beyond the 30-minute window
-          if (futureDetection.timestamp > windowEnd) {
-            break;
-          }
-          
-          // Check if this detection has face recognition matching employee name
-          if (futureDetection.face_recognized_name && 
-              employeeName &&
-              futureDetection.face_recognized_name.toLowerCase() === employeeName.toLowerCase()) {
-            faceRecognized = true;
-            faceRecognitionTime = futureDetection.timestamp;
-            break;
-          }
-        }
-        
-        if (faceRecognized) {
-          const timeDiff = faceRecognitionTime - thresholdTimestamp;
-          return {
-            qualifies: true,
-            arrivalTimestamp: detection.timestamp,
-            totalDeskTime: cumulativeSeconds,
-            thresholdReached: `Cumulative ${(cumulativeSeconds / 60).toFixed(1)} minutes at desk + face recognized after ${(timeDiff / 60).toFixed(1)} minutes`
-          };
-        } else {
-          // Reached desk time threshold but no face recognition within 30 minutes
-          return {
-            qualifies: false,
-            arrivalTimestamp: null,
-            totalDeskTime: cumulativeSeconds,
-            reason: `${(cumulativeSeconds / 60).toFixed(1)} minutes at desk BUT no face recognition within 30 minutes (likely cleaner/visitor)`
-          };
-        }
-      }
-    }
-  }
-  
-  // Didn't reach threshold
-  return {
-    qualifies: false,
-    arrivalTimestamp: null,
-    totalDeskTime: cumulativeSeconds,
-    reason: `Only ${(cumulativeSeconds / 60).toFixed(1)} minutes at desk (need ${thresholdMinutes})`
-  };
-};
-
-/**
  * Validate time consistency for an employee
  * @param {Object} employee - Employee data object
  */
@@ -1062,6 +949,5 @@ module.exports = {
   getEmployeeWorkHours,
   getEmployeeBreakTime,
   getEmployeeAttendance,
-  getEmployeeActivityPatterns,
-  calculateCumulativeDeskTime // Export for testing
+  getEmployeeActivityPatterns
 };
