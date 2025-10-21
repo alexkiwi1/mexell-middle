@@ -199,11 +199,13 @@ const getEmployeeWorkHours = async (filters = {}) => {
         ? (employee.departure_timestamp - employee.arrival_timestamp) / 3600 
         : 0;
 
-      // Calculate break time using presence/absence logic
+      // Calculate break time using presence/absence logic with desk occupancy
       const breakCalculation = calculateBreaksFromDetections(
         employee.detections, 
         employee.arrival_timestamp, 
-        employee.departure_timestamp
+        employee.departure_timestamp,
+        30, // 30-minute break threshold
+        employee.employee_name
       );
       employee.total_break_time = breakCalculation.totalBreakTime;
 
@@ -305,11 +307,13 @@ const getEmployeeBreakTime = async (filters = {}) => {
 
     // Process each employee to find breaks
     for (const employee of workHoursData.employees) {
-      // Use presence/absence break calculation logic
+      // Use presence/absence break calculation logic with desk occupancy
       const breakCalculation = calculateBreaksFromDetections(
         employee.detections || [],
         employee.arrival_timestamp,
-        employee.departure_timestamp
+        employee.departure_timestamp,
+        30, // 30-minute break threshold
+        employee.employee_name
       );
 
       if (breakCalculation.breakSessions.length > 0) {
@@ -593,13 +597,15 @@ const getEmployeeActivityPatterns = async (filters = {}) => {
 
 /**
  * Calculate breaks from employee detections using presence/absence logic
+ * Includes desk occupancy as working time (if employee is at their designated desk)
  * @param {Array} detections - Array of all employee detections sorted by timestamp
  * @param {number} arrivalTimestamp - Employee arrival time (Unix timestamp)
  * @param {number} departureTimestamp - Employee departure time (Unix timestamp)
  * @param {number} MIN_BREAK_MINUTES - Minimum break duration in minutes
+ * @param {string} employeeName - Employee name for desk assignment lookup
  * @returns {Object} Break calculation results
  */
-const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTimestamp, MIN_BREAK_MINUTES = 30) => {
+const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTimestamp, MIN_BREAK_MINUTES = 30, employeeName = null) => {
   if (!detections || detections.length === 0) {
     return { totalBreakTime: 0, breakSessions: [] };
   }
@@ -611,33 +617,56 @@ const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTi
   // Sort detections by timestamp
   const sortedDetections = detections.sort((a, b) => a.timestamp - b.timestamp);
   
-  // Create a presence timeline
+  // Create a presence timeline with desk occupancy consideration
   const presenceTimeline = [];
   let currentPresence = null;
 
+  // Helper function to check if detection indicates working (camera detection OR desk occupancy)
+  const isWorkingDetection = (detection) => {
+    // If employee is detected on camera, they're working
+    if (detection.camera && detection.camera !== 'meeting_room') {
+      return true;
+    }
+    
+    // If employee is at their designated desk, they're working
+    if (detection.zones && detection.zones.length > 0) {
+      const hasDeskZone = detection.zones.some(zone => zone.startsWith('desk_'));
+      if (hasDeskZone) {
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
   // Group consecutive detections into presence periods
   for (const detection of sortedDetections) {
+    const isWorking = isWorkingDetection(detection);
+    
     if (!currentPresence) {
       // Start new presence period
       currentPresence = {
         start: detection.timestamp,
         end: detection.timestamp,
-        detections: [detection]
+        detections: [detection],
+        isWorking: isWorking
       };
     } else {
       const gap = detection.timestamp - currentPresence.end;
       
-      if (gap <= MIN_BREAK_DURATION_SECONDS) {
-        // Continue current presence period (gap ≤ 10 minutes)
+      // If both detections are working (or both non-working), continue the period
+      if (currentPresence.isWorking === isWorking && gap <= MIN_BREAK_DURATION_SECONDS) {
+        // Continue current presence period
         currentPresence.end = detection.timestamp;
         currentPresence.detections.push(detection);
       } else {
-        // Gap too large - save current presence and start new one
+        // Different work status or gap too large - save current presence and start new one
         presenceTimeline.push(currentPresence);
         currentPresence = {
           start: detection.timestamp,
           end: detection.timestamp,
-          detections: [detection]
+          detections: [detection],
+          isWorking: isWorking
         };
       }
     }
@@ -648,31 +677,37 @@ const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTi
     presenceTimeline.push(currentPresence);
   }
 
-  // Calculate breaks between presence periods
+  // Calculate breaks between non-working periods
   for (let i = 0; i < presenceTimeline.length - 1; i++) {
     const currentPresence = presenceTimeline[i];
     const nextPresence = presenceTimeline[i + 1];
     
-    const breakStart = currentPresence.end;
-    const breakEnd = nextPresence.start;
-    const breakDuration = (breakEnd - breakStart) / 3600; // Convert to hours
+    // Only count as break if current period was working and next period is also working
+    // with a gap between them
+    if (currentPresence.isWorking && nextPresence.isWorking) {
+      const breakStart = currentPresence.end;
+      const breakEnd = nextPresence.start;
+      const breakDuration = (breakEnd - breakStart) / 3600; // Convert to hours
 
-    if (breakDuration >= MIN_BREAK_MINUTES / 60) {
-      breakSessions.push({
-        break_start: new Date(breakStart * 1000).toISOString(),
-        break_end: new Date(breakEnd * 1000).toISOString(),
-        duration_hours: breakDuration,
-        previous_presence: {
-          ended_at: new Date(breakStart * 1000).toISOString(),
-          detection_count: currentPresence.detections.length
-        },
-        next_presence: {
-          started_at: new Date(breakEnd * 1000).toISOString(),
-          detection_count: nextPresence.detections.length
-        }
-      });
-      
-      totalBreakTime += breakDuration;
+      if (breakDuration >= MIN_BREAK_MINUTES / 60) {
+        breakSessions.push({
+          break_start: new Date(breakStart * 1000).toISOString(),
+          break_end: new Date(breakEnd * 1000).toISOString(),
+          duration_hours: breakDuration,
+          previous_presence: {
+            ended_at: new Date(breakStart * 1000).toISOString(),
+            detection_count: currentPresence.detections.length,
+            was_working: currentPresence.isWorking
+          },
+          next_presence: {
+            started_at: new Date(breakEnd * 1000).toISOString(),
+            detection_count: nextPresence.detections.length,
+            was_working: nextPresence.isWorking
+          }
+        });
+        
+        totalBreakTime += breakDuration;
+      }
     }
   }
 
