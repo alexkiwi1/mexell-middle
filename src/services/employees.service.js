@@ -199,11 +199,13 @@ const getEmployeeWorkHours = async (filters = {}) => {
         ? (employee.departure_timestamp - employee.arrival_timestamp) / 3600 
         : 0;
 
-      // Calculate break time using shared logic
-      const breakSessions = calculateBreaksFromSessions(workSessions);
-      employee.total_break_time = breakSessions.reduce((total, breakSession) => {
-        return total + breakSession.duration_hours;
-      }, 0);
+      // Calculate break time using presence/absence logic
+      const breakCalculation = calculateBreaksFromDetections(
+        employee.detections, 
+        employee.arrival_timestamp, 
+        employee.departure_timestamp
+      );
+      employee.total_break_time = breakCalculation.totalBreakTime;
 
       // Calculate office time (total time - break time)
       employee.total_work_hours = employee.total_time - employee.total_break_time;
@@ -229,8 +231,8 @@ const getEmployeeWorkHours = async (filters = {}) => {
         last_seen: convertToISO(session.end_time, timezone)
       }));
 
-      // Clean up
-      delete employee.detections;
+      // Store detections for break calculation (don't delete)
+      // employee.detections will be used by break-time endpoint
     });
 
     // Convert sets to arrays and add calculated fields
@@ -301,19 +303,18 @@ const getEmployeeBreakTime = async (filters = {}) => {
 
     const breakData = [];
 
-    // Process each employee's work sessions to find breaks
+    // Process each employee to find breaks
     for (const employee of workHoursData.employees) {
-      const sessions = employee.sessions || [];
-      if (sessions.length < 2) {
-        // Need at least 2 sessions to have a break
-        continue;
-      }
+      // Use presence/absence break calculation logic
+      const breakCalculation = calculateBreaksFromDetections(
+        employee.detections || [],
+        employee.arrival_timestamp,
+        employee.departure_timestamp
+      );
 
-      // Use shared break calculation logic
-      const breakSessions = calculateBreaksFromSessions(sessions);
-
-      if (breakSessions.length > 0) {
-        const totalBreakTime = breakSessions.reduce((sum, breakSession) => sum + breakSession.duration_hours, 0);
+      if (breakCalculation.breakSessions.length > 0) {
+        const totalBreakTime = breakCalculation.totalBreakTime;
+        const breakSessions = breakCalculation.breakSessions;
         
         const averageBreakDuration = totalBreakTime / breakSessions.length;
         const longestBreak = Math.max(...breakSessions.map(bs => bs.duration_hours));
@@ -591,51 +592,91 @@ const getEmployeeActivityPatterns = async (filters = {}) => {
 // Helper functions
 
 /**
- * Calculate breaks from work sessions
- * @param {Array} sessions - Array of work sessions sorted by start time
+ * Calculate breaks from employee detections using presence/absence logic
+ * @param {Array} detections - Array of all employee detections sorted by timestamp
+ * @param {number} arrivalTimestamp - Employee arrival time (Unix timestamp)
+ * @param {number} departureTimestamp - Employee departure time (Unix timestamp)
  * @param {number} MIN_BREAK_MINUTES - Minimum break duration in minutes
- * @returns {Array} Array of break periods
+ * @returns {Object} Break calculation results
  */
-const calculateBreaksFromSessions = (sessions, MIN_BREAK_MINUTES = 10) => {
-  if (!sessions || sessions.length < 2) {
-    return []; // Need at least 2 sessions to have a break
+const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTimestamp, MIN_BREAK_MINUTES = 30) => {
+  if (!detections || detections.length === 0) {
+    return { totalBreakTime: 0, breakSessions: [] };
   }
 
-  const MIN_BREAK_DURATION_HOURS = MIN_BREAK_MINUTES / 60;
+  const MIN_BREAK_DURATION_SECONDS = MIN_BREAK_MINUTES * 60;
   const breakSessions = [];
+  let totalBreakTime = 0;
 
-  // Sort sessions by start time to ensure proper order
-  const sortedSessions = sessions.sort((a, b) => new Date(a.first_seen) - new Date(b.first_seen));
+  // Sort detections by timestamp
+  const sortedDetections = detections.sort((a, b) => a.timestamp - b.timestamp);
+  
+  // Create a presence timeline
+  const presenceTimeline = [];
+  let currentPresence = null;
 
-  // Find gaps between consecutive sessions
-  for (let i = 0; i < sortedSessions.length - 1; i++) {
-    const currentSession = sortedSessions[i];
-    const nextSession = sortedSessions[i + 1];
-    
-    const currentEnd = new Date(currentSession.last_seen);
-    const nextStart = new Date(nextSession.first_seen);
-    const breakDuration = (nextStart - currentEnd) / (1000 * 60 * 60); // Convert to hours
-
-    if (breakDuration >= MIN_BREAK_DURATION_HOURS) {
-      breakSessions.push({
-        break_start: currentSession.last_seen,
-        break_end: nextSession.first_seen,
-        duration_hours: breakDuration,
-        previous_session: {
-          camera: currentSession.camera,
-          zones: currentSession.zones,
-          ended_at: currentSession.last_seen
-        },
-        next_session: {
-          camera: nextSession.camera,
-          zones: nextSession.zones,
-          started_at: nextSession.first_seen
-        }
-      });
+  // Group consecutive detections into presence periods
+  for (const detection of sortedDetections) {
+    if (!currentPresence) {
+      // Start new presence period
+      currentPresence = {
+        start: detection.timestamp,
+        end: detection.timestamp,
+        detections: [detection]
+      };
+    } else {
+      const gap = detection.timestamp - currentPresence.end;
+      
+      if (gap <= MIN_BREAK_DURATION_SECONDS) {
+        // Continue current presence period (gap ≤ 10 minutes)
+        currentPresence.end = detection.timestamp;
+        currentPresence.detections.push(detection);
+      } else {
+        // Gap too large - save current presence and start new one
+        presenceTimeline.push(currentPresence);
+        currentPresence = {
+          start: detection.timestamp,
+          end: detection.timestamp,
+          detections: [detection]
+        };
+      }
     }
   }
 
-  return breakSessions;
+  // Don't forget the last presence period
+  if (currentPresence) {
+    presenceTimeline.push(currentPresence);
+  }
+
+  // Calculate breaks between presence periods
+  for (let i = 0; i < presenceTimeline.length - 1; i++) {
+    const currentPresence = presenceTimeline[i];
+    const nextPresence = presenceTimeline[i + 1];
+    
+    const breakStart = currentPresence.end;
+    const breakEnd = nextPresence.start;
+    const breakDuration = (breakEnd - breakStart) / 3600; // Convert to hours
+
+    if (breakDuration >= MIN_BREAK_MINUTES / 60) {
+      breakSessions.push({
+        break_start: new Date(breakStart * 1000).toISOString(),
+        break_end: new Date(breakEnd * 1000).toISOString(),
+        duration_hours: breakDuration,
+        previous_presence: {
+          ended_at: new Date(breakStart * 1000).toISOString(),
+          detection_count: currentPresence.detections.length
+        },
+        next_presence: {
+          started_at: new Date(breakEnd * 1000).toISOString(),
+          detection_count: nextPresence.detections.length
+        }
+      });
+      
+      totalBreakTime += breakDuration;
+    }
+  }
+
+  return { totalBreakTime, breakSessions };
 };
 
 /**
