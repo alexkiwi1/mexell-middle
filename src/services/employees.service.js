@@ -315,20 +315,16 @@ const getEmployeeBreakTime = async (filters = {}) => {
       if (breakSessions.length > 0) {
         const totalBreakTime = breakSessions.reduce((sum, breakSession) => sum + breakSession.duration_hours, 0);
         
-        // Ensure break time doesn't exceed work time (sanity check)
-        const maxAllowedBreakTime = employee.total_work_hours * 0.8; // Max 80% of work time can be breaks
-        const actualBreakTime = Math.min(totalBreakTime, maxAllowedBreakTime);
-        
-        const averageBreakDuration = actualBreakTime / breakSessions.length;
+        const averageBreakDuration = totalBreakTime / breakSessions.length;
         const longestBreak = Math.max(...breakSessions.map(bs => bs.duration_hours));
         const shortestBreak = Math.min(...breakSessions.map(bs => bs.duration_hours));
-        const breakFrequency = breakSessions.length / Math.max(employee.total_work_hours, 1); // Use employee's work hours
+        const breakFrequency = breakSessions.length / Math.max(employee.total_time, 1); // Use total time at office
         const breakEfficiency = Math.max(0, 100 - (breakFrequency * 10)); // Simple efficiency calculation
 
         breakData.push({
           employee_name: employee.employee_name,
           total_breaks: breakSessions.length,
-          total_break_time: actualBreakTime,
+          total_break_time: totalBreakTime,
           break_sessions: processBreakSessionsTimezone(breakSessions, timezone),
           average_break_duration: averageBreakDuration,
           longest_break: longestBreak,
