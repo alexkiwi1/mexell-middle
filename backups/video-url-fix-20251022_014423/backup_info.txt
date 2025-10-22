@@ -1,0 +1,2 @@
+Backup: Wed Oct 22 01:44:23 UTC 2025
+Fix: Add video URL generation using event table lookup

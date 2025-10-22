@@ -3,6 +3,7 @@ const { app, server: httpServer, io } = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 const { testConnections, initializeAppDatabase } = require('./config/database');
+const { deskAssignmentService } = require('./services');
 
 let server;
 
@@ -26,8 +27,15 @@ const initializeServer = async () => {
     });
     
     // Optional MongoDB connection
-    mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+    mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => {
       logger.info('Connected to MongoDB (optional)');
+      
+      // Auto-seed desk assignments
+      try {
+        await deskAssignmentService.seedDeskAssignments();
+      } catch (error) {
+        logger.error('Failed to seed desk assignments:', error);
+      }
     }).catch((error) => {
       logger.warn('MongoDB connection failed (optional):', error.message);
     });

@@ -307,3 +307,4 @@ curl -I "http://10.0.20.6:8000/clips/review/thumb-meeting_room-1761035213.941356
 **API Version**: 1.0  
 **Last Updated**: October 21, 2025  
 **Documentation Maintained By**: Frigate Middleware Team
+

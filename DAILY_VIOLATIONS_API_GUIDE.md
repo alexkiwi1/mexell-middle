@@ -540,3 +540,4 @@ time curl -s "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-1
 **API Version**: 1.0  
 **Last Updated**: October 21, 2025  
 **Documentation Maintained By**: Frigate Middleware Team
+

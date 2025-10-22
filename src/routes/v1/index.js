@@ -14,6 +14,7 @@ const mobileRoute = require('./mobile.route');
 const performanceRoute = require('./performance.route');
 const timezoneRoute = require('./timezone.route');
 const reportsRoute = require('./reports.route');
+const deskAssignmentRoute = require('./desk.assignment.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -75,6 +76,10 @@ const defaultRoutes = [
       {
         path: '/',
         route: reportsRoute,
+      },
+      {
+        path: '/desk-assignments',
+        route: deskAssignmentRoute,
       },
     ];
 

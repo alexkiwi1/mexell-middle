@@ -158,7 +158,7 @@ curl -I "http://10.0.20.6:5000/api/events/{event_id}/snapshot.jpg"
 
 ### Test Video API Path
 ```bash
-curl "http://localhost:5002/v1/api/recordings/at-time?camera=employees_01&timestamp=1761043055.341651&window=2"
+curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_01&timestamp=1761043055.341651&window=2"
 # Expected: JSON with video_url field
 ```
 

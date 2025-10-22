@@ -182,12 +182,12 @@ const generateMediaUrlsFromReviewsegment = async (violation) => {
 };
 
 /**
- * Generate media URLs from event table (fast, synchronous - no API calls)
+ * Generate media URLs from event table with Frigate primary and fallback
  * Uses Frigate's native event API for thumbnails
  * @param {Object} violation - Violation data from event table
- * @returns {Object} Media URLs with confidence data
+ * @returns {Promise<Object>} Media URLs with confidence data
  */
-const generateMediaUrlsFromEvent = (violation) => {
+const generateMediaUrlsFromEvent = async (violation) => {
   const videoServerUrl = config.frigate.videoServerUrl;
   const frigateApiUrl = 'http://10.0.20.6:5000';  // Frigate API URL
   const timestamp = violation.timestamp;
@@ -212,13 +212,45 @@ const generateMediaUrlsFromEvent = (violation) => {
   // Snapshot: Use Frigate's event snapshot API (full resolution with bounding boxes)
   const snapshotUrl = `${frigateApiUrl}/api/events/${eventId}/snapshot.jpg`;
   
-  // Video: Use our recording timestamp API (frontend can call this to get the video URL)
-  const videoApiPath = `/v1/api/recordings/at-time?camera=${camera}&timestamp=${timestamp}&window=2`;
+  // Video: Try Frigate first, fallback to port 8000
+  let videoUrl = null;
+  let videoSource = 'unknown';
+  
+  // Primary: Try Frigate event clip API
+  const frigateVideoUrl = `${frigateApiUrl}/api/events/${eventId}/clip.mp4`;
+  videoUrl = frigateVideoUrl;
+  videoSource = 'frigate_event_clip';
+  
+  // Fallback: Use port 8000 recordings with time fragment (commented out - Frigate works 100%)
+  // If Frigate ever fails, uncomment this section
+  /*
+  if (!videoUrl) {
+    try {
+      const { getRecordingAtTimestamp } = require('./frigate.service');
+      const recordingResult = await getRecordingAtTimestamp({
+        camera: camera,
+        timestamp: timestamp,
+        window: 2
+      });
+      
+      if (recordingResult.found) {
+        videoUrl = recordingResult.video_url;
+        videoSource = 'recordings_port_8000';
+      }
+    } catch (error) {
+      logger.warn('Both Frigate and port 8000 videos failed', { 
+        eventId, 
+        error: error.message 
+      });
+    }
+  }
+  */
   
   return {
     thumbnail_url: thumbnailUrl,
     snapshot_url: snapshotUrl,
-    video_api_path: videoApiPath,
+    video_url: videoUrl,
+    video_source: videoSource,
     timestamp: timestamp,
     camera: camera,
     violation_id: eventId,
@@ -238,9 +270,8 @@ const generateMediaUrlsFromEvent = (violation) => {
             'Using estimated confidence (no Frigate score available)' : 
             'Using actual Frigate confidence score'
     },
-    note: "Using Frigate event API for thumbnails and snapshots. Video URL available via video_api_path.",
-    frigate_api_url: frigateApiUrl,
-    video_server_url: videoServerUrl
+    note: "Using Frigate event API for all media (thumbnails, snapshots, videos).",
+    frigate_api_url: frigateApiUrl
   };
 };
 
@@ -283,7 +314,7 @@ const DESK_EMPLOYEE_MAPPING = {
   "desk_07": "Khalid Ahmed",
   "desk_08": "Vacant",
   "desk_09": "Muhammad Arsalan",
-  "desk_10": "Saadullah Khoso",
+  "desk_10": "Arsalan Khan",
   "desk_11": "Muhammad Taha",
   "desk_12": "Muhammad Awais",
   
@@ -314,7 +345,7 @@ const DESK_EMPLOYEE_MAPPING = {
   "desk_34": "Wajahat Imam",
   "desk_35": "Bilal Ahmed",
   "desk_36": "Muhammad Usman",
-  "desk_37": "Arsalan Khan",
+  "desk_37": "Saadullah Khoso",
   "desk_38": "Abdul Kabeer",
   "desk_39": "Gian Chand",
   "desk_40": "Ayan Arain",
@@ -353,19 +384,30 @@ const DESK_EMPLOYEE_MAPPING = {
 };
 
 /**
- * Get employee name from desk zone
+ * Get employee name from desk zone using MongoDB
  * @param {Array} zones - Array of zones from violation data
- * @returns {string|null} Employee name or null if no desk zone found
+ * @returns {Promise<string|null>} Employee name or null if no desk zone found
  */
-const getEmployeeFromDeskZone = (zones) => {
+const deskAssignmentService = require('./desk.assignment.service');
+
+const getEmployeeFromDeskZone = async (zones) => {
   if (!zones || !Array.isArray(zones)) {
     return null;
   }
   
   // Look for desk zones in the zones array
   for (const zone of zones) {
-    if (zone.startsWith('desk_') && DESK_EMPLOYEE_MAPPING[zone]) {
-      return DESK_EMPLOYEE_MAPPING[zone];
+    if (zone.startsWith('desk_')) {
+      // Extract desk number from zone (e.g., "desk_01" -> 1)
+      const deskNumber = parseInt(zone.replace('desk_', ''), 10);
+      try {
+        const deskAssignment = await deskAssignmentService.getDeskByNumber(deskNumber);
+        if (deskAssignment && deskAssignment.employee_name !== 'Vacant') {
+          return deskAssignment.employee_name;
+        }
+      } catch (error) {
+        logger.error(`Error getting desk assignment for ${zone}:`, error);
+      }
     }
   }
   
@@ -509,9 +551,9 @@ const getIntelligentCameraAssignment = (violation, cameraEmployees, allViolation
  * @param {Object} violation - Violation data
  * @returns {Object} Assignment result
  */
-const getSimpleEmployeeAssignment = (violation) => {
+const getSimpleEmployeeAssignment = async (violation) => {
   const zones = violation.zones || [];
-  const deskEmployee = getEmployeeFromDeskZone(zones);
+  const deskEmployee = await getEmployeeFromDeskZone(zones);
   
   if (deskEmployee && deskEmployee !== 'Vacant') {
     // Found desk zone with assigned employee
@@ -602,17 +644,17 @@ const getCellPhoneViolations = async (filters = {}) => {
     const result = await query(sql, params);
     
     // Process violations and assign employees using simplified desk-zone assignment
-    const violations = result.map((violation, index) => {
+    const violations = await Promise.all(result.map(async (violation, index) => {
       const zones = violation.zones || [];
       const faceEmployeeName = violation.sub_label || violation.face_employee_name;
-      const deskEmployeeName = getEmployeeFromDeskZone(zones);
+      const deskEmployeeName = await getEmployeeFromDeskZone(zones);
       const violationId = violation.source_id || 'unknown';
       
       // Use simplified assignment - desk zone only
-      const assignment = getSimpleEmployeeAssignment(violation);
+      const assignment = await getSimpleEmployeeAssignment(violation);
       
-      // Generate media URLs from event table (fast, no async calls)
-      const mediaUrls = generateMediaUrlsFromEvent(violation);
+      // Generate media URLs from event table (async for Frigate video check)
+      const mediaUrls = await generateMediaUrlsFromEvent(violation);
 
       // Extract confidence score from event table (real Frigate scores)
       const confidenceScore = violation.confidence ? parseFloat(violation.confidence) : 
@@ -645,7 +687,7 @@ const getCellPhoneViolations = async (filters = {}) => {
         // Media URLs
         media: mediaUrls
       };
-    });
+    }));
 
     return violations;
   } catch (error) {

@@ -11,6 +11,487 @@ const {
 } = require('./timezone.service');
 const logger = require('../config/logger');
 
+// Helper function to validate if detection coordinates are within desk zone boundaries
+function validateDeskCoordinates(deskZone, camera, detectionData) {
+  // Desk zone coordinates from Frigate config
+  const deskCoordinates = {
+    "desk_14": {
+      "employees_03": [[0.234,0.518],[0.139,0.894],[0.367,0.947],[0.42,0.55]],
+      "employees_04": [[0.416,0.043],[0.402,0.116],[0.496,0.136],[0.518,0.038]]
+    },
+    "desk_26": {
+      "employees_03": [[0.398,0.133],[0.386,0.211],[0.485,0.204],[0.484,0.141]],
+      "employees_04": [[0.136,0.427],[0.286,0.475],[0.193,0.945],[0.025,0.766]]
+    },
+    "desk_30": {
+      "employees_05": [[0.423,0.437],[0.337,0.804],[0.561,0.817],[0.604,0.457]],
+      "employees_06": [[0.46,0.103],[0.453,0.161],[0.535,0.151],[0.537,0.095]]
+    },
+    "desk_42": {
+      "employees_05": [[0.542,0.133],[0.532,0.176],[0.598,0.181],[0.605,0.133]],
+      "employees_06": [[0.252,0.523],[0.159,0.809],[0.367,0.859],[0.386,0.523]]
+    }
+  };
+  
+  if (!deskCoordinates[deskZone] || !deskCoordinates[deskZone][camera]) {
+    return true; // Skip validation if coordinates not available
+  }
+  
+  const zoneCoords = deskCoordinates[deskZone][camera];
+  const detectionBox = detectionData?.box;
+  
+  if (!detectionBox || detectionBox.length !== 4) {
+    return true; // Skip validation if no box data
+  }
+  
+  // Check if detection center point is within desk zone
+  // Box format is [x, y, width, height], not [x1, y1, x2, y2]
+  const centerX = detectionBox[0] + (detectionBox[2] / 2);
+  const centerY = detectionBox[1] + (detectionBox[3] / 2);
+  
+  // Simple point-in-polygon check (for rectangular zones)
+  const [x1, y1, x2, y2] = zoneCoords[0].concat(zoneCoords[2]);
+  const isWithinZone = centerX >= Math.min(x1, x2) && centerX <= Math.max(x1, x2) && 
+                      centerY >= Math.min(y1, y2) && centerY <= Math.max(y1, y2);
+  
+  return isWithinZone;
+}
+
+// Helper function to get person detections at a specific desk from ALL cameras (even without face recognition)
+async function getPersonDetectionsAtDesk(deskZone, startTime, endTime) {
+  try {
+    const sql = `
+      SELECT 
+        timestamp,
+        camera,
+        data->'zones' as zones,
+        data->'box' as box,
+        'person' as label,
+        null as face_recognized_name
+      FROM timeline 
+      WHERE 
+        data->'label' = '"person"' 
+        AND data->'zones' ? $1
+        AND timestamp >= $2 
+        AND timestamp <= $3
+      ORDER BY timestamp ASC
+    `;
+    
+    const result = await query(sql, [deskZone, startTime, endTime]);
+    
+        // Filter by coordinate validation
+        const validatedDetections = result.filter(row => {
+          const isValid = validateDeskCoordinates(deskZone, row.camera, { box: row.box });
+          return isValid;
+        });
+        
+        // Additional time-based filter for early morning cleaner detections
+        // Exclude detections before 7:00 AM to filter out cleaner activity
+        const timeFilteredDetections = validatedDetections.filter(row => {
+          const detectionTime = new Date(parseFloat(row.timestamp) * 1000);
+          const hour = detectionTime.getUTCHours();
+          return hour >= 7; // Only include detections from 7:00 AM onwards
+        });
+        
+        logger.info(`Found ${result.length} person detections at ${deskZone}, ${validatedDetections.length} validated by coordinates, ${timeFilteredDetections.length} after time filtering (7AM+)`);
+    
+    return timeFilteredDetections.map(row => ({
+      timestamp: parseFloat(row.timestamp),
+      camera: row.camera,
+      zones: row.zones,
+      label: row.label,
+      face_recognized_name: row.face_recognized_name
+    }));
+  } catch (error) {
+    logger.error('Error getting person detections at desk:', error);
+    return [];
+  }
+}
+
+// Desk to employee mapping
+const DESK_EMPLOYEE_MAPPING = {
+  "desk_01": "Safia Imtiaz",
+  "desk_02": "Kinza Amin",
+  "desk_03": "Aiman Jawaid",
+  "desk_04": "Nimra Ghulam Fareed",
+  "desk_05": "Summaiya Khan",
+  "desk_06": "Arifa Dhari",
+  "desk_07": "Khalid Ahmed", // Note: desk_07 exists on both employees_01 and employees_02 cameras
+  "desk_08": "Vacant",
+  "desk_09": "Muhammad Arsalan",
+  "desk_10": "Arsalan Khan",
+  "desk_11": "Muhammad Taha",
+  "desk_12": "Muhammad Awais",
+  "desk_13": "Nabeel Bhatti",
+  "desk_14": "Abdul Qayoom",
+  "desk_15": "Sharjeel Abbas",
+  "desk_16": "Saad Bin Salman",
+  "desk_17": "Sufiyan Ahmed",
+  "desk_18": "Muhammad Qasim",
+  "desk_19": "Sameer Panhwar",
+  "desk_20": "Bilal Soomro",
+  "desk_21": "Saqlain Murtaza",
+  "desk_22": "Syed Hussain Ali Kazi",
+  "desk_23": "Saad Khan",
+  "desk_24": "Kabeer Rajput",
+  "desk_25": "Mehmood Memon",
+  "desk_26": "Ali Habib",
+  "desk_27": "Bhamar Lal",
+  "desk_28": "Atban Bin Aslam",
+  "desk_29": "Sadique Khowaja",
+  "desk_30": "Syed Awwab",
+  "desk_31": "Samad Siyal",
+  "desk_32": "Wasi Khan",
+  "desk_33": "Kashif Raza",
+  "desk_34": "Wajahat Imam",
+  "desk_35": "Bilal Ahmed",
+  "desk_36": "Muhammad Usman",
+  "desk_37": "Saadullah Khoso",
+  "desk_38": "Abdul Kabeer",
+  "desk_39": "Gian Chand",
+  "desk_40": "Ayan Arain",
+  "desk_41": "Zaib Ali Mughal",
+  "desk_42": "Abdul Wassay",
+  "desk_43": "Aashir Ali",
+  "desk_44": "Ali Raza",
+  "desk_45": "Muhammad Tabish",
+  "desk_46": "Farhan Ali",
+  "desk_47": "Tahir Ahmed",
+  "desk_48": "Zain Nawaz",
+  "desk_49": "Ali Memon",
+  "desk_50": "Muhammad Wasif Samoon",
+  "desk_51": "Vacant",
+  "desk_52": "Sumair Hussain",
+  "desk_53": "Natasha Batool",
+  "desk_54": "Vacant",
+  "desk_55": "Preet Nuckrich",
+  "desk_56": "Vacant",
+  "desk_57": "Vacant",
+  "desk_58": "Konain Mustafa",
+  "desk_59": "Muhammad Uzair",
+  "desk_60": "Vacant",
+  "desk_61": "Hira Memon",
+  "desk_62": "Muhammad Roshan",
+  "desk_63": "Syed Safwan Ali Hashmi",
+  "desk_64": "Arbaz",
+  "desk_65": "Muhammad Shakir",
+  "desk_66": "Muneeb Intern"
+};
+
+/**
+ * Get assigned desk for an employee from MongoDB
+ * @param {string} employeeName - Employee name
+ * @returns {Promise<string|null>} Assigned desk zone
+ */
+const deskAssignmentService = require('./desk.assignment.service');
+
+const getAssignedDesk = async (employeeName) => {
+  try {
+    const deskAssignment = await deskAssignmentService.getEmployeeDesk(employeeName);
+    if (deskAssignment) {
+      return `desk_${String(deskAssignment.desk_number).padStart(2, '0')}`;
+    }
+    logger.warn(`No desk assignment found in MongoDB for ${employeeName}`);
+    return null;
+  } catch (error) {
+    logger.error(`Error getting desk assignment for ${employeeName}:`, error);
+    return null;
+  }
+};
+
+// Get the camera that covers a specific desk
+const getCameraForDesk = (deskZone) => {
+  // Desk to camera mapping based on the Frigate zones configuration from memory
+  const deskToCameraMap = {
+    // employees_01 camera (desks 1-12)
+    'desk_01': 'employees_01', 'desk_02': 'employees_01', 'desk_03': 'employees_01',
+    'desk_04': 'employees_01', 'desk_05': 'employees_01', 'desk_06': 'employees_01',
+    'desk_07': 'employees_01', 'desk_08': 'employees_01', 'desk_09': 'employees_01',
+    'desk_10': 'employees_01', 'desk_11': 'employees_01', 'desk_12': 'employees_01',
+    
+    // employees_02 camera (desks 13-24)
+    'desk_13': 'employees_02', 'desk_14': 'employees_02', 'desk_15': 'employees_02',
+    'desk_16': 'employees_02', 'desk_17': 'employees_02', 'desk_18': 'employees_02',
+    'desk_19': 'employees_02', 'desk_20': 'employees_02', 'desk_21': 'employees_02',
+    'desk_22': 'employees_02', 'desk_23': 'employees_02', 'desk_24': 'employees_02',
+    
+    // employees_03 camera (desks 25-40)
+    'desk_25': 'employees_03', 'desk_26': 'employees_03', 'desk_27': 'employees_03',
+    'desk_28': 'employees_03', 'desk_29': 'employees_03', 'desk_30': 'employees_03',
+    'desk_31': 'employees_03', 'desk_32': 'employees_03', 'desk_33': 'employees_03',
+    'desk_34': 'employees_03', 'desk_35': 'employees_03', 'desk_36': 'employees_03',
+    'desk_37': 'employees_03', 'desk_38': 'employees_03', 'desk_39': 'employees_03',
+    'desk_40': 'employees_03',
+    
+    // employees_04 camera (desks 41-56)
+    'desk_41': 'employees_04', 'desk_42': 'employees_04', 'desk_43': 'employees_05',
+    'desk_44': 'employees_04', 'desk_45': 'employees_04', 'desk_46': 'employees_04',
+    'desk_47': 'employees_04', 'desk_48': 'employees_04', 'desk_49': 'employees_04',
+    'desk_50': 'employees_04', 'desk_51': 'employees_04', 'desk_52': 'employees_04',
+    'desk_53': 'employees_04', 'desk_54': 'employees_04', 'desk_55': 'employees_04',
+    'desk_56': 'employees_04',
+    
+    // employees_05 camera (desks 57-64)
+    'desk_57': 'employees_05', 'desk_58': 'employees_05', 'desk_59': 'employees_05',
+    'desk_60': 'employees_05', 'desk_61': 'employees_05', 'desk_62': 'employees_05',
+    'desk_63': 'employees_05', 'desk_64': 'employees_05',
+    
+    // employees_06 camera (desks 65-66)
+    'desk_65': 'employees_06', 'desk_66': 'employees_06',
+    
+    // employees_07 camera (desks 67-68)
+    'desk_67': 'employees_07', 'desk_68': 'employees_07',
+    
+    // employees_08 camera (desks 69-70)
+    'desk_69': 'employees_08', 'desk_70': 'employees_08',
+    
+    // admin_office camera (desks 71-73)
+    'desk_71': 'admin_office', 'desk_72': 'admin_office', 'desk_73': 'admin_office',
+    
+    // reception camera (desk 74)
+    'desk_74': 'reception'
+  };
+  
+  return deskToCameraMap[deskZone] || null;
+};
+
+/**
+ * Calculate arrival time for an employee using priority-based detection logic
+ * 
+ * @param {string} employeeName - Employee name
+ * @param {Array} allDetections - All face-recognized detections for the employee
+ * @param {number} startTime - Start time (Unix timestamp)
+ * @param {number} endTime - End time (Unix timestamp)
+ * @returns {Object} Arrival result with timestamp, camera, zones, method, confidence, and detection count
+ */
+async function calculateArrivalTime(employeeName, allDetections, startTime, endTime) {
+  const assignedDesk = await getAssignedDesk(employeeName);
+  
+  // Sort detections by timestamp
+  const sortedDetections = allDetections.sort((a, b) => a.timestamp - b.timestamp);
+  
+  // Use existing detections instead of making database calls (performance optimization)
+  const personDetectionsAtDesk = sortedDetections.filter(detection => 
+    detection.zones && detection.zones.includes(assignedDesk)
+  );
+  
+  // PRIORITY 1: Face recognition at assigned desk with continuous pattern validation
+  const faceDetectionsAtDesk = sortedDetections.filter(detection => 
+    detection.zones && detection.zones.includes(assignedDesk)
+  );
+  
+  if (faceDetectionsAtDesk.length > 0) {
+    // Validate continuous pattern - require at least 2 detections within 10 minutes
+    const CONTINUOUS_THRESHOLD = 2;
+    const TIME_WINDOW = 600; // 10 minutes in seconds
+    
+    for (let i = 0; i < faceDetectionsAtDesk.length; i++) {
+      const currentDetection = faceDetectionsAtDesk[i];
+      const windowStart = currentDetection.timestamp;
+      const windowEnd = windowStart + TIME_WINDOW;
+      
+      const windowDetections = faceDetectionsAtDesk.filter(d => 
+        d.timestamp >= windowStart && d.timestamp <= windowEnd
+      );
+      
+      if (windowDetections.length >= CONTINUOUS_THRESHOLD) {
+        logger.info(`${employeeName}: Face recognition at assigned desk - continuous pattern (${windowDetections.length} detections within 10 min)`);
+        return {
+          timestamp: currentDetection.timestamp,
+          camera: currentDetection.camera,
+          zones: currentDetection.zones || [],
+          method: 'face_at_desk',
+          confidence: 'high',
+          detectionCount: faceDetectionsAtDesk.length
+        };
+      }
+    }
+    
+    logger.warn(`${employeeName}: Face recognition at assigned desk but no continuous pattern (${faceDetectionsAtDesk.length} total detections)`);
+  }
+  
+  // PRIORITY 2: Person detection at assigned desk with 5-minute cumulative threshold
+  const deskDetections = personDetectionsAtDesk.filter(detection => 
+    detection.zones && detection.zones.includes(assignedDesk)
+  );
+  
+  if (deskDetections.length > 0) {
+    let cumulativeSeconds = 0;
+    const THRESHOLD_SECONDS = 5 * 60; // 5 minutes
+    let firstDeskTimestamp = null;
+    
+    for (const detection of deskDetections) {
+      if (!firstDeskTimestamp) {
+        firstDeskTimestamp = detection.timestamp;
+      }
+      
+      const detectionDuration = 1; // 1 second per detection (conservative)
+      cumulativeSeconds += detectionDuration;
+      
+      if (cumulativeSeconds >= THRESHOLD_SECONDS) {
+        logger.info(`${employeeName}: Person detection at assigned desk - 5-minute threshold met (${cumulativeSeconds}s with ${deskDetections.indexOf(detection) + 1} detections)`);
+        return {
+          timestamp: firstDeskTimestamp,
+          camera: deskDetections[0].camera,
+          zones: [assignedDesk],
+          method: 'person_at_desk',
+          confidence: 'medium',
+          detectionCount: deskDetections.length
+        };
+      }
+    }
+    
+    // Fallback: Use first desk detection even if less than 5 minutes
+    if (deskDetections.length > 0) {
+      logger.warn(`${employeeName}: Person detection at assigned desk - fallback to first detection (only ${cumulativeSeconds}s cumulative)`);
+      return {
+        timestamp: deskDetections[0].timestamp,
+        camera: deskDetections[0].camera,
+        zones: [assignedDesk],
+        method: 'person_at_desk',
+        confidence: 'low',
+        detectionCount: deskDetections.length
+      };
+    }
+  }
+  
+  // PRIORITY 3: Face recognition anywhere as last resort - DISABLED for accuracy
+  // Only count arrival if detected at assigned desk to avoid false positives
+  logger.warn(`${employeeName}: No valid arrival detection at assigned desk ${assignedDesk} - marking as absent`);
+  return {
+    timestamp: null,
+    camera: null,
+    zones: [],
+    method: 'no_desk_detection',
+    confidence: 'none',
+    detectionCount: 0
+  };
+  
+  // No arrival detected
+  logger.warn(`${employeeName}: No arrival detected`);
+  return {
+    timestamp: null,
+    camera: null,
+    zones: null,
+    method: 'none',
+    confidence: 'none',
+    detectionCount: 0
+  };
+}
+
+/**
+ * Calculate departure time for an employee using priority-based detection logic
+ * Filters spurious late detections and finds the last substantial work session
+ * 
+ * @param {string} employeeName - Employee name
+ * @param {Array} allDetections - All face-recognized detections for the employee
+ * @param {Array} workSessions - Work sessions for the employee
+ * @param {number} startTime - Start time (Unix timestamp)
+ * @param {number} endTime - End time (Unix timestamp)
+ * @returns {Object} Departure result with timestamp, camera, zones, method, confidence, and detection count
+ */
+async function calculateDepartureTime(employeeName, allDetections, workSessions, startTime, endTime) {
+  const assignedDesk = await getAssignedDesk(employeeName);
+  
+  // Sort detections by timestamp (descending for last detections)
+  const sortedDetections = allDetections.sort((a, b) => b.timestamp - a.timestamp);
+  
+  // Filter out spurious sessions (< 5 minutes OR < 5 detections)
+  const substantialSessions = workSessions.filter(session => {
+    const durationMinutes = session.duration_hours * 60;
+    return durationMinutes >= 5 || (session.detection_count && session.detection_count >= 5);
+  });
+  
+  if (substantialSessions.length === 0) {
+    logger.warn(`${employeeName}: No substantial work sessions found for departure`);
+    return {
+      timestamp: null,
+      camera: null,
+      zones: null,
+      method: 'none',
+      confidence: 'none',
+      detectionCount: 0
+    };
+  }
+  
+  // Get the last substantial session
+  const lastSubstantialSession = substantialSessions[substantialSessions.length - 1];
+  const sessionEndTime = lastSubstantialSession.end_time;
+  
+  // Validate departure gap - should have 30+ minutes with no activity after this session
+  const detectionsAfterSession = sortedDetections.filter(d => d.timestamp > sessionEndTime);
+  const hasValidDepartureGap = detectionsAfterSession.length === 0 || 
+    (detectionsAfterSession[0].timestamp - sessionEndTime) >= 1800; // 30 minutes
+  
+  if (!hasValidDepartureGap) {
+    logger.info(`${employeeName}: No valid departure gap after session ending at ${unixToISO(sessionEndTime)}`);
+  }
+  
+  // Get detections near the end of the last substantial session (±10 minutes)
+  const windowStart = sessionEndTime - 600;
+  const windowEnd = sessionEndTime + 600;
+  const nearEndDetections = sortedDetections.filter(d => 
+    d.timestamp >= windowStart && d.timestamp <= windowEnd
+  ).sort((a, b) => b.timestamp - a.timestamp); // Sort descending (last first)
+  
+  // PRIORITY 1: Last face recognition at assigned desk with continuous pattern
+  const faceDetectionsAtDesk = nearEndDetections.filter(detection => 
+    detection.zones && detection.zones.includes(assignedDesk)
+  );
+  
+  if (faceDetectionsAtDesk.length >= 2) {
+    // Validate continuous pattern - require at least 2 detections within 10 minutes
+    const lastFaceAtDesk = faceDetectionsAtDesk[0];
+    const secondLastFaceAtDesk = faceDetectionsAtDesk[1];
+    
+    if ((lastFaceAtDesk.timestamp - secondLastFaceAtDesk.timestamp) <= 600) {
+      logger.info(`${employeeName}: Face recognition at assigned desk - departure confirmed (${faceDetectionsAtDesk.length} detections)`);
+      return {
+        timestamp: lastFaceAtDesk.timestamp,
+        camera: lastFaceAtDesk.camera,
+        zones: lastFaceAtDesk.zones || [],
+        method: 'face_at_desk',
+        confidence: 'high',
+        detectionCount: faceDetectionsAtDesk.length
+      };
+    }
+  }
+  
+  // PRIORITY 2: Last person detection at assigned desk
+  // Use existing detections instead of making new database calls (performance optimization)
+  const personDetectionsAtDesk = sortedDetections.filter(detection => 
+    detection.zones && detection.zones.includes(assignedDesk)
+  ).sort((a, b) => b.timestamp - a.timestamp);
+  
+  if (personDetectionsAtDesk.length >= 2) {
+    const lastPersonAtDesk = personDetectionsAtDesk[0];
+    const secondLastPersonAtDesk = personDetectionsAtDesk[1];
+    
+    if ((lastPersonAtDesk.timestamp - secondLastPersonAtDesk.timestamp) <= 600) {
+      logger.info(`${employeeName}: Person detection at assigned desk - departure confirmed (${personDetectionsAtDesk.length} detections)`);
+      return {
+        timestamp: lastPersonAtDesk.timestamp,
+        camera: lastPersonAtDesk.camera,
+        zones: [assignedDesk],
+        method: 'person_at_desk',
+        confidence: 'medium',
+        detectionCount: personDetectionsAtDesk.length
+      };
+    }
+  }
+  
+  // PRIORITY 3: Use end of last substantial session as fallback
+  logger.info(`${employeeName}: Using last substantial session end time as departure (${lastSubstantialSession.duration_hours.toFixed(2)} hours, ${lastSubstantialSession.detection_count || 0} detections)`);
+  return {
+    timestamp: sessionEndTime,
+    camera: lastSubstantialSession.cameras && lastSubstantialSession.cameras[0] || null,
+    zones: lastSubstantialSession.zones || [],
+    method: 'session_end',
+    confidence: 'medium',
+    detectionCount: lastSubstantialSession.detection_count || 0
+  };
+}
+
 /**
  * Employee Service - Comprehensive employee tracking and attendance management
  * 
@@ -65,7 +546,8 @@ const getEmployeeWorkHours = async (filters = {}) => {
         camera,
         data->'zones' as zones,
         timestamp,
-        data->>'score' as confidence
+        data->>'score' as confidence,
+        data->>'id' as event_id
       FROM timeline
       ${whereClause}
       ORDER BY data->'sub_label'->>0, timestamp
@@ -74,8 +556,82 @@ const getEmployeeWorkHours = async (filters = {}) => {
     const result = await query(sql, params);
     logger.info(`Found ${result.length} person detections for work hours calculation`);
 
+    // Extract unique employee names from detections (filter out nulls/undefined/empty strings)
+    const employeeNames = Array.from(new Set(
+      result
+        .map(r => r.employee_name)
+        .filter(name => name && typeof name === 'string' && name.trim().length > 0)
+    ));
+
+    // Pre-fetch ALL events for these employees for video URL generation
+    let eventLookup = {};
+    if (employeeNames.length > 0) {
+      logger.info(`Fetching events for ${employeeNames.length} employees: ${employeeNames.slice(0, 5).join(', ')}...`);
+      
+      // Build SQL with proper $1, $2, etc placeholders for pg library
+      const placeholders = employeeNames.map((_, i) => `$${i + 1}`).join(',');
+      const eventSql = `
+        SELECT 
+          id as event_id,
+          camera,
+          start_time,
+          end_time,
+          sub_label as employee_name
+        FROM event 
+        WHERE sub_label IN (${placeholders})
+          AND start_time >= $${employeeNames.length + 1} 
+          AND start_time <= $${employeeNames.length + 2}
+        ORDER BY sub_label, camera, start_time
+      `;
+      
+      const eventParams = [...employeeNames, startTime, endTime];
+      const eventResult = await query(eventSql, eventParams);
+      
+      // Build lookup map: {employee_camera: [events sorted by time]}
+      eventResult.forEach(event => {
+        const key = `${event.employee_name}_${event.camera}`;
+        if (!eventLookup[key]) {
+          eventLookup[key] = [];
+        }
+        eventLookup[key].push(event);
+      });
+      
+      logger.info(`Pre-fetched ${eventResult.length} events for video URL generation`);
+    }
+
     // Process detections and calculate work hours properly
     const employeeData = {};
+    
+    // Initialize ALL employees from MongoDB desk assignments to ensure consistent attendance tracking
+    const allDeskAssignments = await deskAssignmentService.getAllDesks({}, { pagination: false });
+    for (const assignment of allDeskAssignments.results) {
+      if (assignment.status === 'active' && assignment.employee_name !== 'Vacant') {
+        const employeeName = assignment.employee_name;
+        employeeData[employeeName] = {
+          employee_name: employeeName,
+          total_work_hours: 0,
+          total_activity: 0,
+          cameras: new Set(),
+          zones: new Set(),
+          sessions: [],
+          first_seen: null,
+          last_seen: null,
+          detections: [], // Store all detections for proper calculation
+          arrival_timestamp: null,
+        departure_timestamp: null,
+        arrival_time: null,
+        departure_time: null,
+        total_time: 0,
+        total_break_time: 0,
+        office_time: 0,
+        arrival_method: 'none',
+        arrival_confidence: 'none',
+        departure_method: 'none',
+        departure_confidence: 'none',
+        false_positive_reason: null
+        };
+      }
+    }
     
     // Group detections by employee
     result.forEach(row => {
@@ -90,7 +646,19 @@ const getEmployeeWorkHours = async (filters = {}) => {
           sessions: [],
           first_seen: null,
           last_seen: null,
-          detections: [] // Store all detections for proper calculation
+          detections: [], // Store all detections for proper calculation
+          arrival_timestamp: null,
+          departure_timestamp: null,
+          arrival_time: null,
+          departure_time: null,
+          total_time: 0,
+          total_break_time: 0,
+          office_time: 0,
+          arrival_method: 'none',
+          arrival_confidence: 'none',
+          departure_method: 'none',
+          departure_confidence: 'none',
+          false_positive_reason: null
         };
       }
 
@@ -101,13 +669,13 @@ const getEmployeeWorkHours = async (filters = {}) => {
         row.zones.forEach(zone => employeeData[employee].zones.add(zone));
       }
 
-      // Store detection data with face recognition info
+      // Store detection data
       employeeData[employee].detections.push({
         timestamp: row.timestamp,
         camera: row.camera,
         zones: row.zones || [],
         confidence: parseFloat(row.confidence) || 0,
-        face_recognized_name: row.employee_name || null // Store face recognition data
+        event_id: row.event_id || null // Add event_id for Frigate video URLs
       });
 
       if (!employeeData[employee].first_seen || row.timestamp < employeeData[employee].first_seen) {
@@ -119,9 +687,28 @@ const getEmployeeWorkHours = async (filters = {}) => {
     });
 
     // Calculate work hours by finding continuous presence periods
-    Object.values(employeeData).forEach(employee => {
+    for (const employee of Object.values(employeeData)) {
       const detections = employee.detections;
-      if (detections.length === 0) return;
+      
+      // Handle employees with no detections (absent)
+      if (detections.length === 0) {
+        logger.info(`Employee ${employee.employee_name}: No detections found - marked as absent`);
+        employee.arrival_timestamp = null;
+        employee.departure_timestamp = null;
+        employee.arrival_time = "no arrival";
+        employee.departure_time = "no arrival";
+        employee.total_time = 0;
+        employee.total_break_time = 0;
+        employee.office_time = 0;
+        employee.arrival_method = 'none';
+        employee.arrival_confidence = 'none';
+        employee.departure_method = 'none';
+        employee.departure_confidence = 'none';
+        employee.false_positive_reason = null;
+        employee.first_seen = null;
+        employee.last_seen = null;
+        continue;
+      }
 
       // Sort detections by timestamp
       detections.sort((a, b) => a.timestamp - b.timestamp);
@@ -141,7 +728,8 @@ const getEmployeeWorkHours = async (filters = {}) => {
             cameras: new Set([detection.camera]),
             zones: new Set(detection.zones || []),
             detection_count: 1,
-            avg_confidence: detection.confidence
+            avg_confidence: detection.confidence,
+            event_id: detection.event_id || null // Add event_id for Frigate video URLs
           };
         } else {
           const gap = detection.timestamp - currentSession.end_time;
@@ -163,7 +751,8 @@ const getEmployeeWorkHours = async (filters = {}) => {
               zones: Array.from(currentSession.zones),
               duration_hours: (currentSession.end_time - currentSession.start_time) / 3600,
               first_seen: unixToISO(currentSession.start_time),
-              last_seen: unixToISO(currentSession.end_time)
+              last_seen: unixToISO(currentSession.end_time),
+              event_id: currentSession.event_id || null // Add event_id for Frigate video URLs
             });
             
             // Start new session
@@ -173,7 +762,8 @@ const getEmployeeWorkHours = async (filters = {}) => {
               cameras: new Set([detection.camera]),
               zones: new Set(detection.zones || []),
               detection_count: 1,
-              avg_confidence: detection.confidence
+              avg_confidence: detection.confidence,
+              event_id: detection.event_id || null // Add event_id for Frigate video URLs
             };
           }
         }
@@ -187,82 +777,326 @@ const getEmployeeWorkHours = async (filters = {}) => {
           zones: Array.from(currentSession.zones),
           duration_hours: (currentSession.end_time - currentSession.start_time) / 3600,
           first_seen: unixToISO(currentSession.start_time),
-          last_seen: unixToISO(currentSession.end_time)
+          last_seen: unixToISO(currentSession.end_time),
+          event_id: currentSession.event_id || null // Add event_id for Frigate video URLs
         });
       }
 
-      // Calculate arrival and departure times (store as Unix timestamps for timezone conversion)
-      // Calculate cumulative desk time to determine arrival with face recognition validation
-      const MIN_CUMULATIVE_MINUTES = 2;
-      const deskTimeResult = calculateCumulativeDeskTime(
-        employee.detections, 
-        MIN_CUMULATIVE_MINUTES, 
-        employee.employee_name
+      // Calculate arrival and departure times using dedicated arrival function
+      const arrivalResult = await calculateArrivalTime(
+        employee.employee_name,
+        employee.detections,
+        startTime,
+        endTime
       );
-      employee.arrival_timestamp = deskTimeResult.arrivalTimestamp;
-      employee.arrival_qualification = deskTimeResult; // Store for debugging
       
-      // CRITICAL: Only set departure if there's a qualifying arrival
-      // If no arrival, then no departure (employee never truly "arrived" at work)
-      employee.departure_timestamp = employee.arrival_timestamp && workSessions.length > 0 
-        ? workSessions[workSessions.length - 1].end_time 
-        : null;
+      // Create validArrivalDetection object for compatibility with existing code
+      const validArrivalDetection = arrivalResult.timestamp ? {
+        timestamp: arrivalResult.timestamp,
+        camera: arrivalResult.camera,
+        zones: arrivalResult.zones
+      } : null;
+      
+      // Log arrival method for debugging and monitoring
+      logger.info(`${employee.employee_name}: Arrival via ${arrivalResult.method} (confidence: ${arrivalResult.confidence}, detections: ${arrivalResult.detectionCount})`);
+      
+      // Calculate departure time using dedicated departure function
+      // Only calculate departure if there was an arrival
+      let departureResult;
+      if (arrivalResult.timestamp) {
+        departureResult = await calculateDepartureTime(
+          employee.employee_name,
+          employee.detections,
+          workSessions,
+          startTime,
+          endTime
+        );
+        
+        // Log departure method for debugging and monitoring
+        logger.info(`${employee.employee_name}: Departure via ${departureResult.method} (confidence: ${departureResult.confidence}, detections: ${departureResult.detectionCount})`);
+      } else {
+        // No arrival = no departure
+        departureResult = {
+          timestamp: null,
+          camera: null,
+          zones: [],
+          method: 'none',
+          confidence: 'none',
+          detectionCount: 0
+        };
+        logger.info(`${employee.employee_name}: No departure (no arrival detected)`);
+      }
+      
+      // Apply false positive filtering logic
+      let finalArrivalTimestamp = arrivalResult.timestamp;
+      let finalDepartureTimestamp = departureResult.timestamp;
+      let falsePositiveReason = null;
+      
+      // Check 1: Arrival and departure must be on the same day
+      if (finalArrivalTimestamp && finalDepartureTimestamp) {
+        const arrivalDate = new Date(finalArrivalTimestamp * 1000).toDateString();
+        const departureDate = new Date(finalDepartureTimestamp * 1000).toDateString();
+        
+        if (arrivalDate !== departureDate) {
+          logger.warn(`${employee.employee_name}: Cross-day detection detected (${arrivalDate} -> ${departureDate}) - marking as false positive`);
+          finalArrivalTimestamp = null;
+          finalDepartureTimestamp = null;
+          falsePositiveReason = 'cross_day_detection';
+        }
+      }
+      
+      // Check 2: Work duration must be at least 2 hours (filter out brief visits/false positives)
+      if (finalArrivalTimestamp && finalDepartureTimestamp && !falsePositiveReason) {
+        const workDurationHours = (finalDepartureTimestamp - finalArrivalTimestamp) / 3600;
+        
+        if (workDurationHours < 2) {
+          logger.warn(`${employee.employee_name}: Work duration too short (${workDurationHours.toFixed(2)} hours) - marking as false positive`);
+          finalArrivalTimestamp = null;
+          finalDepartureTimestamp = null;
+          falsePositiveReason = 'insufficient_work_duration';
+        }
+      }
+      
+      // Check if day has passed - if so, mark as absent instead of "still in office"
+      const currentTime = Math.floor(Date.now() / 1000);
+      const dayEndTime = endTime; // End of the query day
+      
+      // If current time is past the query day, and employee has arrival but no departure
+      if (currentTime > dayEndTime && finalArrivalTimestamp && !finalDepartureTimestamp) {
+        logger.warn(`${employee.employee_name}: Day has passed with no departure - marking as absent instead of 'still in office'`);
+        finalArrivalTimestamp = null;
+        finalDepartureTimestamp = null;
+        falsePositiveReason = 'day_passed_no_departure';
+      }
+      
+      // Set final arrival and departure timestamps (after false positive filtering)
+      employee.arrival_timestamp = finalArrivalTimestamp;
+      employee.departure_timestamp = finalDepartureTimestamp;
+      
+      // Store false positive reason for debugging
+      if (falsePositiveReason) {
+        employee.false_positive_reason = falsePositiveReason;
+        logger.info(`${employee.employee_name}: Marked as false positive - ${falsePositiveReason}`);
+      }
+      
+      // Update first session to use arrival detection if available
+      if (validArrivalDetection && workSessions.length > 0) {
+        workSessions[0] = {
+          ...workSessions[0],
+          start_time: validArrivalDetection.timestamp,
+          end_time: validArrivalDetection.timestamp,
+          cameras: Array.from(new Set([validArrivalDetection.camera])),
+          zones: Array.from(new Set(validArrivalDetection.zones || [])),
+          first_seen: unixToISO(validArrivalDetection.timestamp),
+          last_seen: unixToISO(validArrivalDetection.timestamp),
+          duration_hours: 0
+        };
+      }
+      
+      // Store arrival and departure metadata for analytics
+      employee.arrival_method = arrivalResult.method;
+      employee.arrival_confidence = arrivalResult.confidence;
+      employee.departure_method = departureResult.method;
+      employee.departure_confidence = departureResult.confidence;
+      
+      // Calculate proper status
+      if (!employee.arrival_timestamp) {
+        employee.status = 'absent';
+      } else if (!employee.departure_timestamp) {
+        employee.status = 'present';
+      } else {
+        employee.status = 'departed';
+      }
+      
+      // Helper function to calculate office time with improved break detection logic
+      const calculateOfficeTime = (detections, assignedDesk, arrivalTime, departureTime) => {
+        if (!detections || detections.length === 0 || !arrivalTime || !departureTime) {
+          return 0;
+        }
+        
+        // Get all detections within work period (any face detection)
+        const allDetections = detections.filter(d => 
+          d.timestamp >= arrivalTime && 
+          d.timestamp <= departureTime
+        ).sort((a, b) => a.timestamp - b.timestamp);
+        
+        if (allDetections.length === 0) {
+          return 0;
+        }
+        
+        // Get desk detections (at assigned desk)
+        const deskDetections = allDetections.filter(d => 
+          d.zones && d.zones.includes(assignedDesk)
+        );
+        
+        // Calculate total working time (all face detections with 30-min gap tolerance)
+        let totalWorkingSeconds = 0;
+        const GAP_TOLERANCE = 30 * 60; // 30 minutes in seconds
+        
+        for (let i = 0; i < allDetections.length - 1; i++) {
+          const currentDetection = allDetections[i];
+          const nextDetection = allDetections[i + 1];
+          const gap = nextDetection.timestamp - currentDetection.timestamp;
+          
+          // If gap is within tolerance, add it to working time
+          if (gap <= GAP_TOLERANCE) {
+            totalWorkingSeconds += gap;
+          }
+        }
+        
+        // Calculate break time: periods when desk is empty for 30+ min AND no face detected anywhere
+        let breakSeconds = 0;
+        const BREAK_THRESHOLD = 30 * 60; // 30 minutes
+        
+        for (let i = 0; i < deskDetections.length - 1; i++) {
+          const currentDeskDetection = deskDetections[i];
+          const nextDeskDetection = deskDetections[i + 1];
+          const gap = nextDeskDetection.timestamp - currentDeskDetection.timestamp;
+          
+          // If gap at desk > 30 min, check if it's a real break
+          if (gap > BREAK_THRESHOLD) {
+            // Check if there are any face detections during this gap period
+            const gapStart = currentDeskDetection.timestamp;
+            const gapEnd = nextDeskDetection.timestamp;
+            
+            const faceDetectionsInGap = allDetections.filter(d => 
+              d.timestamp > gapStart && d.timestamp < gapEnd
+            );
+            
+            // If no face detections during gap, it's break time
+            if (faceDetectionsInGap.length === 0) {
+              breakSeconds += gap;
+            }
+          }
+        }
+        
+        // Office time = Total working time - Break time
+        const officeTimeSeconds = Math.max(0, totalWorkingSeconds - breakSeconds);
+        return officeTimeSeconds / 3600; // Convert to hours
+      };
       
       // Calculate total time at office (arrival to departure)
-      // Use first detection as fallback if no qualifying arrival for calculation purposes only
-      const effectiveArrivalTime = employee.arrival_timestamp || 
-        (workSessions.length > 0 ? workSessions[0].start_time : null);
-      const effectiveDepartureTime = employee.departure_timestamp || 
-        (workSessions.length > 0 ? workSessions[workSessions.length - 1].end_time : null);
-        
-      employee.total_time = effectiveArrivalTime && effectiveDepartureTime 
-        ? (effectiveDepartureTime - effectiveArrivalTime) / 3600 
+      employee.total_time = employee.arrival_timestamp && employee.departure_timestamp 
+        ? (employee.departure_timestamp - employee.arrival_timestamp) / 3600 
         : 0;
 
-      // Calculate break time using presence/absence logic with desk occupancy
-      const breakCalculation = calculateBreaksFromDetections(
+      // Calculate actual office time (working time minus real breaks)
+      const assignedDesk = await getAssignedDesk(employee.employee_name);
+      employee.office_time = calculateOfficeTime(
         employee.detections, 
-        effectiveArrivalTime,  // Use effective time instead of arrival_timestamp
-        effectiveDepartureTime,
-        30, // 30-minute break threshold
-        employee.employee_name
+        assignedDesk,
+        employee.arrival_timestamp, 
+        employee.departure_timestamp
       );
-      employee.total_break_time = breakCalculation.totalBreakTime;
 
-      // Calculate office time (total time - break time)
-      employee.total_work_hours = employee.total_time - employee.total_break_time;
-      employee.office_time = employee.total_work_hours; // Alias for clarity
+      // Calculate break time (total time - office time)
+      employee.total_break_time = Math.max(0, employee.total_time - employee.office_time);
+      employee.total_work_hours = employee.office_time; // Alias for compatibility
 
       // Validate time consistency
       validateTimeConsistency(employee);
       
       // Convert to timezone-specific times
-      employee.arrival_time = employee.arrival_timestamp ? convertToISO(employee.arrival_timestamp, timezone) : null;
-      employee.departure_time = employee.departure_timestamp ? convertToISO(employee.departure_timestamp, timezone) : null;
+      employee.arrival_time = employee.arrival_timestamp ? convertToISO(employee.arrival_timestamp, timezone) : "no arrival";
+      employee.departure_time = employee.departure_timestamp ? convertToISO(employee.departure_timestamp, timezone) : "no arrival";
       
       // Also store first_seen and last_seen for compatibility
       employee.first_seen = employee.arrival_time;
       employee.last_seen = employee.departure_time;
+      
+      // Add assigned desk information
+      employee.assigned_desk = await getAssignedDesk(employee.employee_name);
+      employee.assigned_desk_camera = validArrivalDetection ? validArrivalDetection.camera : null;
 
       logger.info(`Employee ${employee.employee_name}: ${workSessions.length} sessions, Total=${employee.total_time.toFixed(2)}h, Office=${employee.office_time.toFixed(2)}h, Break=${employee.total_break_time.toFixed(2)}h`);
-      
-      // Log arrival qualification status
-      if (deskTimeResult.qualifies) {
-        logger.info(`Employee ${employee.employee_name}: Arrival qualified - ${deskTimeResult.thresholdReached}`);
-      } else {
-        logger.warn(`Employee ${employee.employee_name}: No qualifying arrival - ${deskTimeResult.reason} (arrival and departure set to null)`);
-      }
 
-      // Store work sessions with timezone conversion
-      employee.sessions = workSessions.map(session => ({
+      // Store work sessions with timezone conversion and Frigate video URLs
+      employee.sessions = await Promise.all(workSessions.map(async (session, index) => {
+        // For the first session (arrival), filter cameras to only include assigned desk camera
+        let filteredCameras = session.cameras;
+        if (index === 0 && employee.assigned_desk_camera) {
+          // First session should only show the assigned desk camera for arrival video
+          filteredCameras = session.cameras.filter(camera => camera === employee.assigned_desk_camera);
+          if (filteredCameras.length === 0) {
+            // Fallback to original cameras if assigned desk camera not found
+            filteredCameras = session.cameras;
+          }
+        }
+        
+        // Find correct event ID for this session's video URL
+        // CRITICAL: Only use assigned desk camera, not any camera from session
+        let correctEventId = null;
+        if (session.cameras && session.cameras.length > 0) {
+          // Get the assigned desk camera for this employee
+          const assignedDesk = await getAssignedDesk(employee.employee_name);
+          if (!assignedDesk) {
+            logger.warn(`${employee.employee_name}: No assigned desk - cannot generate video URL`);
+            return {
+              ...session,
+              cameras: filteredCameras,
+              first_seen: convertToISO(session.start_time, timezone),
+              last_seen: convertToISO(session.end_time, timezone),
+              video_url: null
+            };
+          }
+
+          // Determine the camera that covers this assigned desk
+          const assignedCamera = getCameraForDesk(assignedDesk);
+          if (!assignedCamera) {
+            logger.warn(`${employee.employee_name}: No camera found for desk ${assignedDesk} - cannot generate video URL`);
+            return {
+              ...session,
+              cameras: filteredCameras,
+              first_seen: convertToISO(session.start_time, timezone),
+              last_seen: convertToISO(session.end_time, timezone),
+              video_url: null
+            };
+          }
+
+          // CRITICAL FIX: Only look for events on the assigned desk camera
+          const eventKey = `${employee.employee_name}_${assignedCamera}`;
+          const employeeEvents = eventLookup[eventKey] || [];
+          
+          if (employeeEvents.length > 0) {
+            // Strategy: Find the CLOSEST event to the session start time
+            // Consider events within ±10 minutes of the session start
+            const TIME_TOLERANCE = 600; // 10 minutes in seconds
+            
+            const candidateEvents = employeeEvents.filter(event =>
+              Math.abs(event.start_time - session.start_time) <= TIME_TOLERANCE
+            );
+            
+            let matchingEvent = null;
+            
+            if (candidateEvents.length > 0) {
+              // Find the CLOSEST event to the session start time
+              matchingEvent = candidateEvents.reduce((closest, event) =>
+                Math.abs(event.start_time - session.start_time) < 
+                Math.abs(closest.start_time - session.start_time) ? event : closest
+              );
+            }
+            
+            if (matchingEvent) {
+              correctEventId = matchingEvent.event_id;
+            }
+          }
+        }
+
+        return {
         ...session,
+          cameras: filteredCameras,
         first_seen: convertToISO(session.start_time, timezone),
-        last_seen: convertToISO(session.end_time, timezone)
+          last_seen: convertToISO(session.end_time, timezone),
+          // Add Frigate video URL for this session using matched event ID
+          video_url: correctEventId ? 
+            `${process.env.FRIGATE_API_URL || 'http://10.0.20.6:5000'}/api/events/${correctEventId}/clip.mp4` : 
+            null
+        };
       }));
 
       // Store detections for break calculation (don't delete)
       // employee.detections will be used by break-time endpoint
-    });
+    }
 
     // Convert sets to arrays and add calculated fields
     const employees = Object.values(employeeData).map(emp => ({
@@ -279,7 +1113,9 @@ const getEmployeeWorkHours = async (filters = {}) => {
       total_time: emp.total_time || 0,
       total_break_time: emp.total_break_time || 0,
       office_time: emp.office_time || 0,
-      unaccounted_time: 0 // Should always be 0 with correct calculation
+      unaccounted_time: 0, // Should always be 0 with correct calculation
+      // Add date field for consistency with other APIs
+      date: emp.arrival_time ? emp.arrival_time.split('T')[0] : convertToISO(startTime, timezone).split('T')[0]
     }));
 
     return {
@@ -431,8 +1267,25 @@ const getEmployeeAttendance = async (filters = {}) => {
 
     const result = await query(sql, params);
 
-    // Process attendance data
+    // Process attendance data - Initialize ALL employees for consistent tracking
     const attendanceData = {};
+    
+    // Initialize ALL employees from MongoDB desk assignments to ensure consistent attendance tracking
+    const allDeskAssignments = await deskAssignmentService.getAllDesks({}, { pagination: false });
+    for (const assignment of allDeskAssignments.results) {
+      if (assignment.status === 'active' && assignment.employee_name !== 'Vacant') {
+        const employeeName = assignment.employee_name;
+        attendanceData[employeeName] = {
+          employee_name: employeeName,
+          total_days: 0,
+          total_work_hours: 0,
+          attendance_records: [],
+          attendance_rate: 0,
+          average_daily_hours: 0,
+          perfect_attendance: true
+        };
+      }
+    }
     
     result.forEach(row => {
       const employee = row.employee_name || 'Unknown';
@@ -463,6 +1316,24 @@ const getEmployeeAttendance = async (filters = {}) => {
       // Check for perfect attendance (assuming 8+ hours is full day)
       if (workHours < 8) {
         attendanceData[employee].perfect_attendance = false;
+      }
+    });
+
+    // Handle employees with no attendance records (absent)
+    Object.values(attendanceData).forEach(emp => {
+      if (emp.total_days === 0) {
+        // Employee was absent - add a single absent record for the date
+        const attendanceDate = new Date(startTime * 1000).toISOString().split('T')[0];
+        emp.attendance_records.push({
+          date: attendanceDate,
+          first_seen: null,
+          last_seen: null,
+          work_hours: 0,
+          activity_count: 0,
+          status: 'absent'
+        });
+        emp.total_days = 1; // Count as 1 day for attendance rate calculation
+        emp.perfect_attendance = false;
       }
     });
 
@@ -782,92 +1653,6 @@ const calculateBreaksFromDetections = (detections, arrivalTimestamp, departureTi
 };
 
 /**
- * Calculate cumulative desk time and find when employee reaches threshold
- * @param {Array} detections - All detections sorted by timestamp
- * @param {number} thresholdMinutes - Cumulative minutes required (default 2)
- * @param {string} employeeName - Employee name to match against face recognition
- * @returns {Object} { qualifies: boolean, arrivalTimestamp: number|null, totalDeskTime: number }
- */
-const calculateCumulativeDeskTime = (detections, thresholdMinutes = 2, employeeName = null) => {
-  const THRESHOLD_SECONDS = thresholdMinutes * 60;
-  const FACE_RECOGNITION_WINDOW = 30 * 60; // 30 minutes in seconds
-  let cumulativeSeconds = 0;
-  let lastDeskDetection = null;
-  const GAP_TOLERANCE = 60; // Allow 60-second gaps in desk detections
-  
-  for (let i = 0; i < detections.length; i++) {
-    const detection = detections[i];
-    const hasDeskZone = detection.zones && detection.zones.some(z => z.startsWith('desk_'));
-    
-    if (hasDeskZone) {
-      if (lastDeskDetection) {
-        const gap = detection.timestamp - lastDeskDetection.timestamp;
-        // Only count time if gap is reasonable (continuous-ish desk activity)
-        if (gap <= GAP_TOLERANCE) {
-          cumulativeSeconds += gap;
-        }
-      }
-      lastDeskDetection = detection;
-      
-      // Check if we've reached the threshold
-      if (cumulativeSeconds >= THRESHOLD_SECONDS) {
-        // Now check for face recognition within 30 minutes
-        const thresholdTimestamp = detection.timestamp;
-        const windowEnd = thresholdTimestamp + FACE_RECOGNITION_WINDOW;
-        
-        // Look ahead in detections for face recognition match
-        let faceRecognized = false;
-        let faceRecognitionTime = null;
-        
-        for (let j = i; j < detections.length; j++) {
-          const futureDetection = detections[j];
-          
-          // Stop if we've gone beyond the 30-minute window
-          if (futureDetection.timestamp > windowEnd) {
-            break;
-          }
-          
-          // Check if this detection has face recognition matching employee name
-          if (futureDetection.face_recognized_name && 
-              employeeName &&
-              futureDetection.face_recognized_name.toLowerCase() === employeeName.toLowerCase()) {
-            faceRecognized = true;
-            faceRecognitionTime = futureDetection.timestamp;
-            break;
-          }
-        }
-        
-        if (faceRecognized) {
-          const timeDiff = faceRecognitionTime - thresholdTimestamp;
-          return {
-            qualifies: true,
-            arrivalTimestamp: detection.timestamp,
-            totalDeskTime: cumulativeSeconds,
-            thresholdReached: `Cumulative ${(cumulativeSeconds / 60).toFixed(1)} minutes at desk + face recognized after ${(timeDiff / 60).toFixed(1)} minutes`
-          };
-        } else {
-          // Reached desk time threshold but no face recognition within 30 minutes
-          return {
-            qualifies: false,
-            arrivalTimestamp: null,
-            totalDeskTime: cumulativeSeconds,
-            reason: `${(cumulativeSeconds / 60).toFixed(1)} minutes at desk BUT no face recognition within 30 minutes (likely cleaner/visitor)`
-          };
-        }
-      }
-    }
-  }
-  
-  // Didn't reach threshold
-  return {
-    qualifies: false,
-    arrivalTimestamp: null,
-    totalDeskTime: cumulativeSeconds,
-    reason: `Only ${(cumulativeSeconds / 60).toFixed(1)} minutes at desk (need ${thresholdMinutes})`
-  };
-};
-
-/**
  * Validate time consistency for an employee
  * @param {Object} employee - Employee data object
  */
@@ -1062,6 +1847,5 @@ module.exports = {
   getEmployeeWorkHours,
   getEmployeeBreakTime,
   getEmployeeAttendance,
-  getEmployeeActivityPatterns,
-  calculateCumulativeDeskTime // Export for testing
+  getEmployeeActivityPatterns
 };

@@ -1,0 +1,2 @@
+Backup: Wed Oct 22 01:14:41 UTC 2025
+Fix: Ensure arrival matches assigned desk zone AND camera
