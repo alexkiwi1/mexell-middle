@@ -1,5 +1,5 @@
 {
-  "base_url": "http://10.100.6.2:5002/v1",
+  "base_url": "http://10.0.20.8:5002/v1",
   "authentication": {
     "header": "X-API-Key",
     "value": "frigate-api-key-2024"
@@ -186,19 +186,19 @@
   },
   "example_requests": {
     "get_employees_today": {
-      "url": "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=PKT",
+      "url": "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=PKT",
       "headers": {
         "X-API-Key": "frigate-api-key-2024"
       }
     },
     "get_violations_this_week": {
-      "url": "http://10.100.6.2:5002/v1/api/violations/cell-phones?start_date=2025-10-14&end_date=2025-10-20&timezone=PKT&severity=high",
+      "url": "http://10.0.20.8:5002/v1/api/violations/cell-phones?start_date=2025-10-14&end_date=2025-10-20&timezone=PKT&severity=high",
       "headers": {
         "X-API-Key": "frigate-api-key-2024"
       }
     },
     "get_dashboard_data": {
-      "url": "http://10.100.6.2:5002/v1/api/analytics/dashboard?start_date=2025-10-20&end_date=2025-10-20&timezone=PKT",
+      "url": "http://10.0.20.8:5002/v1/api/analytics/dashboard?start_date=2025-10-20&end_date=2025-10-20&timezone=PKT",
       "headers": {
         "X-API-Key": "frigate-api-key-2024"
       }

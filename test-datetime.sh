@@ -3,7 +3,7 @@
 # Frigate Middleware API - Date/Time Parameter Test Script
 # This script demonstrates the new date/time functionality
 
-BASE_URL="http://10.100.6.2:5002"
+BASE_URL="http://10.0.20.8:5002"
 echo "🧪 Testing Frigate Middleware API - Date/Time Parameters"
 echo "Base URL: $BASE_URL"
 echo "======================================================"

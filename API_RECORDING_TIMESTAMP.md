@@ -37,37 +37,37 @@ GET /v1/api/recordings/at-time
 ### 1. Unix Timestamp (Original Method)
 
 ```bash
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734"
 ```
 
 ### 2. ISO Date String
 
 ```bash
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=2025-10-20T12:47:50"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=2025-10-20T12:47:50"
 ```
 
 ### 3. Date + Time with Timezone
 
 ```bash
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&start_time=12:47:50&timezone=Asia/Karachi&window=5"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&start_time=12:47:50&timezone=Asia/Karachi&window=5"
 ```
 
 ### 4. Date Only (Defaults to Midnight)
 
 ```bash
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ### 5. Hours Lookback
 
 ```bash
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&hours=24&window=3"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&hours=24&window=3"
 ```
 
 ### 6. Custom Time Window
 
 ```bash
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&window=5"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&window=5"
 ```
 
 ## Response Format
@@ -211,13 +211,13 @@ When multiple time parameters are provided, the API follows this priority:
 
 ```bash
 # Priority 1: Uses timestamp (ignores hours if both provided)
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&hours=24"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&hours=24"
 
 # Priority 2: Uses start_date + start_time
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&start_time=12:47:50"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&start_time=12:47:50"
 
 # Priority 3: Uses hours lookback
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&hours=24"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&hours=24"
 ```
 
 ## Timezone Support
@@ -235,7 +235,7 @@ The API supports timezone-aware date conversions using standard IANA timezone na
 
 ```bash
 # Convert Pakistan time to UTC automatically
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&start_time=17:47:50&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&start_time=17:47:50&timezone=Asia/Karachi"
 ```
 
 ## Database Query
@@ -288,68 +288,68 @@ router.get('/api/recordings/at-time', getRecordingAtTimestampController);
 
 ```bash
 # Farhan Ali at desk_57 (employees_08)
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734"
 
 # Arbaz at desk_11 (employees_02) 
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_02&timestamp=1760947508.370521"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_02&timestamp=1760947508.370521"
 
 # Bilal Soomro at admin office
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=admin_office&timestamp=1760953153.700047"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=admin_office&timestamp=1760953153.700047"
 ```
 
 ### Test with ISO Date Strings
 
 ```bash
 # Using ISO date string
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=2025-10-20T12:47:50"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=2025-10-20T12:47:50"
 
 # With custom window
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=2025-10-20T12:47:50&window=5"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=2025-10-20T12:47:50&window=5"
 ```
 
 ### Test with Date + Time Parameters
 
 ```bash
 # Date and time with timezone
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&start_time=17:47:50&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&start_time=17:47:50&timezone=Asia/Karachi"
 
 # Date only (defaults to midnight UTC)
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20"
 
 # Date only with timezone
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&start_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ### Test with Hours Lookback
 
 ```bash
 # Last 24 hours
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&hours=24"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&hours=24"
 
 # Last hour with 5-second window
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&hours=1&window=5"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&hours=1&window=5"
 ```
 
 ### Test Error Cases
 
 ```bash
 # Missing camera parameter
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?timestamp=1760964472.674734"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?timestamp=1760964472.674734"
 
 # Missing all time parameters
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08"
 
 # Non-existent camera
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=nonexistent&timestamp=1760964472.674734"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=nonexistent&timestamp=1760964472.674734"
 
 # Invalid window size
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&window=100"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&window=100"
 
 # Invalid date format
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&start_date=20-10-2025"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&start_date=20-10-2025"
 
 # Invalid hours parameter
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&hours=-5"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&hours=-5"
 ```
 
 ## Integration Examples
@@ -362,7 +362,7 @@ const axios = require('axios');
 // Method 1: Using Unix timestamp
 async function getVideoUrl(camera, timestamp, window = 2) {
   try {
-    const response = await axios.get('http://10.100.6.2:5002/v1/api/recordings/at-time', {
+    const response = await axios.get('http://10.0.20.8:5002/v1/api/recordings/at-time', {
       params: { camera, timestamp, window }
     });
     return response.data.data.video_url;
@@ -375,7 +375,7 @@ async function getVideoUrl(camera, timestamp, window = 2) {
 // Method 2: Using date + time with timezone
 async function getVideoUrlByDate(camera, date, time, timezone = 'UTC', window = 2) {
   try {
-    const response = await axios.get('http://10.100.6.2:5002/v1/api/recordings/at-time', {
+    const response = await axios.get('http://10.0.20.8:5002/v1/api/recordings/at-time', {
       params: { 
         camera, 
         start_date: date, 
@@ -394,7 +394,7 @@ async function getVideoUrlByDate(camera, date, time, timezone = 'UTC', window = 
 // Method 3: Using hours lookback
 async function getRecentVideo(camera, hours = 24, window = 2) {
   try {
-    const response = await axios.get('http://10.100.6.2:5002/v1/api/recordings/at-time', {
+    const response = await axios.get('http://10.0.20.8:5002/v1/api/recordings/at-time', {
       params: { camera, hours, window }
     });
     return response.data.data.video_url;
@@ -423,7 +423,7 @@ from typing import Optional
 
 # Method 1: Using Unix timestamp
 def get_video_url(camera: str, timestamp: float, window: int = 2) -> Optional[str]:
-    url = 'http://10.100.6.2:5002/v1/api/recordings/at-time'
+    url = 'http://10.0.20.8:5002/v1/api/recordings/at-time'
     params = {'camera': camera, 'timestamp': timestamp, 'window': window}
     
     try:
@@ -437,7 +437,7 @@ def get_video_url(camera: str, timestamp: float, window: int = 2) -> Optional[st
 # Method 2: Using date + time with timezone
 def get_video_url_by_date(camera: str, date: str, time: str, 
                           timezone: str = 'UTC', window: int = 2) -> Optional[str]:
-    url = 'http://10.100.6.2:5002/v1/api/recordings/at-time'
+    url = 'http://10.0.20.8:5002/v1/api/recordings/at-time'
     params = {
         'camera': camera,
         'start_date': date,
@@ -456,7 +456,7 @@ def get_video_url_by_date(camera: str, date: str, time: str,
 
 # Method 3: Using hours lookback
 def get_recent_video(camera: str, hours: int = 24, window: int = 2) -> Optional[str]:
-    url = 'http://10.100.6.2:5002/v1/api/recordings/at-time'
+    url = 'http://10.0.20.8:5002/v1/api/recordings/at-time'
     params = {'camera': camera, 'hours': hours, 'window': window}
     
     try:
@@ -482,13 +482,13 @@ print(f'Video URL (Recent): {video_url3}')
 
 ```bash
 # Get video with 2-second window (default)
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734"
 
 # Get video with 5-second window
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&window=5"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&window=5"
 
 # Get video with 1-second window (minimal)
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&window=1"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_08&timestamp=1760964472.674734&window=1"
 ```
 
 ## Performance Notes

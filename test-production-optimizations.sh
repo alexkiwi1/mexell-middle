@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-API_BASE="http://10.100.6.2:5002"
+API_BASE="http://10.0.20.8:5002"
 TEST_DURATION=30
 CONCURRENT_USERS=5
 

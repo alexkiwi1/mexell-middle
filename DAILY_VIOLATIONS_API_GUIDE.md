@@ -10,7 +10,7 @@ The Daily Violations API provides a comprehensive view of all employee violation
 GET /v1/api/violations/summary
 ```
 
-**Server:** `http://10.100.6.2:5002`
+**Server:** `http://10.0.20.8:5002`
 
 ## Key Features
 
@@ -36,27 +36,27 @@ GET /v1/api/violations/summary
 
 ### Get All Violations for Specific Date
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21&timezone=Asia/Karachi"
 ```
 
 ### Get Violations for Date Range
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-20&end_date=2025-10-21&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-20&end_date=2025-10-21&timezone=Asia/Karachi"
 ```
 
 ### Get Last 24 Hours (Default)
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/summary"
+curl "http://10.0.20.8:5002/v1/api/violations/summary"
 ```
 
 ### Get Last 48 Hours
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/summary?hours=48"
+curl "http://10.0.20.8:5002/v1/api/violations/summary?hours=48"
 ```
 
 ### Limit Total Violations Returned
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21&limit=50"
+curl "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21&limit=50"
 ```
 
 ## Response Structure
@@ -243,7 +243,7 @@ if (violation.media.video_url) {
 ```javascript
 const getDailyViolations = async (date) => {
   const response = await fetch(
-    `http://10.100.6.2:5002/v1/api/violations/summary?` +
+    `http://10.0.20.8:5002/v1/api/violations/summary?` +
     `start_date=${date}&end_date=${date}&timezone=Asia/Karachi`
   );
   
@@ -282,7 +282,7 @@ import requests
 from datetime import date
 
 def get_daily_violations(target_date):
-    url = "http://10.100.6.2:5002/v1/api/violations/summary"
+    url = "http://10.0.20.8:5002/v1/api/violations/summary"
     params = {
         "start_date": target_date,
         "end_date": target_date,
@@ -495,21 +495,21 @@ if (violation.media.video_url_error) {
 ### Test with curl
 ```bash
 # Get today's violations
-curl -s "http://10.100.6.2:5002/v1/api/violations/summary?start_date=$(date +%Y-%m-%d)&end_date=$(date +%Y-%m-%d)" | jq '.data.employees | length'
+curl -s "http://10.0.20.8:5002/v1/api/violations/summary?start_date=$(date +%Y-%m-%d)&end_date=$(date +%Y-%m-%d)" | jq '.data.employees | length'
 
 # Get violations with pretty JSON
-curl -s "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '.'
+curl -s "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '.'
 
 # Count total violations
-curl -s "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '[.data.employees[].totalViolations] | add'
+curl -s "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '[.data.employees[].totalViolations] | add'
 
 # Get employee with most violations
-curl -s "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '.data.employees[0] | {name: .employeeName, count: .totalViolations}'
+curl -s "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '.data.employees[0] | {name: .employeeName, count: .totalViolations}'
 ```
 
 ### Test Response Time
 ```bash
-time curl -s "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" > /dev/null
+time curl -s "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" > /dev/null
 ```
 
 ## FAQ
@@ -540,4 +540,5 @@ time curl -s "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-1
 **API Version**: 1.0  
 **Last Updated**: October 21, 2025  
 **Documentation Maintained By**: Frigate Middleware Team
+
 

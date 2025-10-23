@@ -14,29 +14,29 @@
 ### **Specific Date (Full Day)**
 ```bash
 # Get all activity for October 1st, 2025
-curl "http://10.100.6.2:5002/v1/api/cameras/summary?start_date=2025-10-01&end_date=2025-10-01"
+curl "http://10.0.20.8:5002/v1/api/cameras/summary?start_date=2025-10-01&end_date=2025-10-01"
 
 # Get violations for specific camera on specific date
-curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?start_date=2025-10-01&end_date=2025-10-01&limit=5"
+curl "http://10.0.20.8:5002/v1/api/cameras/employees_01/violations?start_date=2025-10-01&end_date=2025-10-01&limit=5"
 ```
 
 ### **Time Range (Specific Hours)**
 ```bash
 # Work hours analysis (8 AM - 5 PM)
-curl "http://10.100.6.2:5002/v1/api/cameras/summary?start_date=2025-10-01T08:00:00.000Z&end_date=2025-10-01T17:00:00.000Z"
+curl "http://10.0.20.8:5002/v1/api/cameras/summary?start_date=2025-10-01T08:00:00.000Z&end_date=2025-10-01T17:00:00.000Z"
 
 # Morning violations (10 AM - 12 PM)
-curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?start_date=2025-10-01T10:00:00.000Z&end_date=2025-10-01T12:00:00.000Z&limit=3"
+curl "http://10.0.20.8:5002/v1/api/cameras/employees_01/violations?start_date=2025-10-01T10:00:00.000Z&end_date=2025-10-01T12:00:00.000Z&limit=3"
 
 # Afternoon activity (2 PM - 4 PM)
-curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/activity?start_date=2025-10-01T14:00:00.000Z&end_date=2025-10-01T16:00:00.000Z&limit=5"
+curl "http://10.0.20.8:5002/v1/api/cameras/employees_01/activity?start_date=2025-10-01T14:00:00.000Z&end_date=2025-10-01T16:00:00.000Z&limit=5"
 ```
 
 ### **Backward Compatibility**
 ```bash
 # Still works with hours parameter
-curl "http://10.100.6.2:5002/v1/api/cameras/summary?hours=24"
-curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?hours=12&limit=10"
+curl "http://10.0.20.8:5002/v1/api/cameras/summary?hours=24"
+curl "http://10.0.20.8:5002/v1/api/cameras/employees_01/violations?hours=12&limit=10"
 ```
 
 ## 📊 **Affected Endpoints**
@@ -65,22 +65,22 @@ curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?hours=12&lim
 ### **Daily Reports**
 ```bash
 # Get yesterday's summary
-curl "http://10.100.6.2:5002/v1/api/cameras/summary?start_date=2025-10-01&end_date=2025-10-01"
+curl "http://10.0.20.8:5002/v1/api/cameras/summary?start_date=2025-10-01&end_date=2025-10-01"
 ```
 
 ### **Shift Analysis**
 ```bash
 # Morning shift (6 AM - 2 PM)
-curl "http://10.100.6.2:5002/v1/api/cameras/summary?start_date=2025-10-01T06:00:00.000Z&end_date=2025-10-01T14:00:00.000Z"
+curl "http://10.0.20.8:5002/v1/api/cameras/summary?start_date=2025-10-01T06:00:00.000Z&end_date=2025-10-01T14:00:00.000Z"
 
 # Evening shift (2 PM - 10 PM)
-curl "http://10.100.6.2:5002/v1/api/cameras/summary?start_date=2025-10-01T14:00:00.000Z&end_date=2025-10-01T22:00:00.000Z"
+curl "http://10.0.20.8:5002/v1/api/cameras/summary?start_date=2025-10-01T14:00:00.000Z&end_date=2025-10-01T22:00:00.000Z"
 ```
 
 ### **Violation Investigation**
 ```bash
 # Check specific time period for violations
-curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?start_date=2025-10-01T10:00:00.000Z&end_date=2025-10-01T12:00:00.000Z&limit=10"
+curl "http://10.0.20.8:5002/v1/api/cameras/employees_01/violations?start_date=2025-10-01T10:00:00.000Z&end_date=2025-10-01T12:00:00.000Z&limit=10"
 ```
 
 ### **Multi-Camera Analysis**
@@ -88,7 +88,7 @@ curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?start_date=2
 # Compare all cameras for specific date
 for camera in employees_01 employees_02 employees_03; do
   echo "=== $camera ==="
-  curl -s "http://10.100.6.2:5002/v1/api/cameras/$camera/violations?start_date=2025-10-01&end_date=2025-10-01&limit=3"
+  curl -s "http://10.0.20.8:5002/v1/api/cameras/$camera/violations?start_date=2025-10-01&end_date=2025-10-01&limit=3"
 done
 ```
 

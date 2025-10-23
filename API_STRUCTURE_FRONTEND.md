@@ -2,7 +2,7 @@
 
 ## **Base URL**
 ```
-http://10.100.6.2:5002/v1
+http://10.0.20.8:5002/v1
 ```
 
 ## **Authentication**
@@ -31,7 +31,7 @@ GET /api/employees/work-hours
 **Example:**
 ```bash
 curl -H "X-API-Key: frigate-api-key-2024" \
-"http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=PKT"
+"http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=PKT"
 ```
 
 **Response:**
@@ -312,9 +312,9 @@ GET /api/violations/cell-phones
         "confidence": "high",
         "zones": ["desk_42"],
         "media_urls": {
-          "snapshot": "http://10.100.6.2:5002/media/snapshots/employees_01/2025-10-20/14:30:15.jpg",
-          "thumbnail": "http://10.100.6.2:5002/media/thumbnails/employees_01/2025-10-20/14:30:15.jpg",
-          "video": "http://10.100.6.2:5002/media/recordings/2025-10-20/14/employees_01/30.15.mp4"
+          "snapshot": "http://10.0.20.8:5002/media/snapshots/employees_01/2025-10-20/14:30:15.jpg",
+          "thumbnail": "http://10.0.20.8:5002/media/thumbnails/employees_01/2025-10-20/14:30:15.jpg",
+          "video": "http://10.0.20.8:5002/media/recordings/2025-10-20/14/employees_01/30.15.mp4"
         },
         "assignment_confidence": "high",
         "assignment_method": "face_recognition"
@@ -600,7 +600,7 @@ GET /api/cameras
 
 ```javascript
 // API Configuration
-const API_BASE = 'http://10.100.6.2:5002/v1';
+const API_BASE = 'http://10.0.20.8:5002/v1';
 const API_KEY = 'frigate-api-key-2024';
 
 // Headers

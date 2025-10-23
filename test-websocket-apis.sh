@@ -6,7 +6,7 @@
 echo "🔌 Testing WebSocket APIs and Real-time Features"
 echo "================================================"
 
-BASE_URL="http://10.100.6.2:5002/v1"
+BASE_URL="http://10.0.20.8:5002/v1"
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
@@ -44,7 +44,7 @@ test_websocket_connection() {
     echo -n "Testing WebSocket connection... "
     
     # Check if Socket.IO endpoint is accessible
-    response=$(curl -s "http://10.100.6.2:5002/socket.io/?EIO=4&transport=polling" 2>/dev/null)
+    response=$(curl -s "http://10.0.20.8:5002/socket.io/?EIO=4&transport=polling" 2>/dev/null)
     
     if echo "$response" | grep -q "sid"; then
         echo -e "${GREEN}✅ PASS${NC}"
@@ -81,10 +81,10 @@ echo ""
 echo "3. Testing WebSocket Test Client Access"
 echo "---------------------------------------"
 echo -n "Testing WebSocket test client... "
-response=$(curl -s -o /dev/null -w "%{http_code}" "http://10.100.6.2:5002/websocket-test.html")
+response=$(curl -s -o /dev/null -w "%{http_code}" "http://10.0.20.8:5002/websocket-test.html")
 if [ "$response" = "200" ]; then
     echo -e "${GREEN}✅ PASS${NC}"
-    echo "   WebSocket test client available at: http://10.100.6.2:5002/websocket-test.html"
+    echo "   WebSocket test client available at: http://10.0.20.8:5002/websocket-test.html"
 else
     echo -e "${RED}❌ FAIL${NC}"
     echo "   HTTP Status: $response"
@@ -94,17 +94,17 @@ echo ""
 echo "4. Testing Swagger Documentation"
 echo "--------------------------------"
 echo -n "Testing Swagger UI... "
-response=$(curl -s -o /dev/null -w "%{http_code}" "http://10.100.6.2:5002/v1/docs/")
+response=$(curl -s -o /dev/null -w "%{http_code}" "http://10.0.20.8:5002/v1/docs/")
 if [ "$response" = "200" ]; then
     echo -e "${GREEN}✅ PASS${NC}"
-    echo "   Swagger UI available at: http://10.100.6.2:5002/v1/docs/"
+    echo "   Swagger UI available at: http://10.0.20.8:5002/v1/docs/"
 else
     echo -e "${RED}❌ FAIL${NC}"
     echo "   HTTP Status: $response"
 fi
 
 echo -n "Testing Swagger JSON... "
-response=$(curl -s "http://10.100.6.2:5002/v1/docs/swagger.json" | grep -q "websocket")
+response=$(curl -s "http://10.0.20.8:5002/v1/docs/swagger.json" | grep -q "websocket")
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ PASS${NC}"
     echo "   WebSocket endpoints included in Swagger documentation"
@@ -161,9 +161,9 @@ echo "✅ Swagger documentation includes WebSocket endpoints"
 echo "✅ Integration with existing APIs maintained"
 echo ""
 echo "🌐 Access Points:"
-echo "   • WebSocket Test Client: http://10.100.6.2:5002/websocket-test.html"
-echo "   • Swagger Documentation: http://10.100.6.2:5002/v1/docs/"
-echo "   • WebSocket Server: ws://10.100.6.2:5002/socket.io/"
+echo "   • WebSocket Test Client: http://10.0.20.8:5002/websocket-test.html"
+echo "   • Swagger Documentation: http://10.0.20.8:5002/v1/docs/"
+echo "   • WebSocket Server: ws://10.0.20.8:5002/socket.io/"
 echo ""
 echo "📡 Real-time Features:"
 echo "   • Live violation detection"

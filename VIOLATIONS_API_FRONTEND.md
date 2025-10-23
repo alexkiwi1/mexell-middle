@@ -22,7 +22,7 @@ This document provides comprehensive API documentation for violation tracking an
 ## Base Configuration
 
 ```javascript
-const API_BASE = "http://10.100.6.2:5002/v1";
+const API_BASE = "http://10.0.20.8:5002/v1";
 const VIDEO_SERVER = "http://10.0.20.6:8000";
 ```
 
@@ -521,7 +521,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ViolationsService {
-  private apiBase = 'http://10.100.6.2:5002/v1';
+  private apiBase = 'http://10.0.20.8:5002/v1';
 
   constructor(private http: HttpClient) {}
 
@@ -673,22 +673,22 @@ The violations API uses a **working URLs only** approach:
 
 ### Test Camera Violations
 ```bash
-curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?hours=24&limit=10"
+curl "http://10.0.20.8:5002/v1/api/cameras/employees_01/violations?hours=24&limit=10"
 ```
 
 ### Test Employee Summary
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/summary?hours=24"
+curl "http://10.0.20.8:5002/v1/api/violations/summary?hours=24"
 ```
 
 ### Test Specific Employee
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/employee/Muhammad%20Taha?hours=24"
+curl "http://10.0.20.8:5002/v1/api/violations/employee/Muhammad%20Taha?hours=24"
 ```
 
 ### Test Media URLs
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/media/bb5fqc/employees_01/1761029742"
+curl "http://10.0.20.8:5002/v1/api/violations/media/bb5fqc/employees_01/1761029742"
 ```
 
 ### Test Working Thumbnail URLs
@@ -706,7 +706,7 @@ curl -I "http://10.0.20.6:8000/recordings/2025-10-21/06/employees_01/55.32.mp4"
 ### Test Clean Response Format
 ```bash
 # Test the new clean response format with only working URLs
-curl -s "http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?limit=1" | jq '.data.violations[0].media'
+curl -s "http://10.0.20.8:5002/v1/api/cameras/employees_01/violations?limit=1" | jq '.data.violations[0].media'
 ```
 
 **Expected Response:**

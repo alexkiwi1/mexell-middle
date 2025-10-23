@@ -34,7 +34,7 @@ chmod +x test-script.sh
 ./test-script.sh
 
 # Run with custom base URL
-BASE_URL="http://10.100.6.2:5002" ./test-script.sh
+BASE_URL="http://10.0.20.8:5002" ./test-script.sh
 ```
 
 **Features:**
@@ -168,7 +168,7 @@ curl -I "http://localhost:5002/media/clips/review/thumb-employees_04-1760915764.
 - **Media Server:** `http://10.0.20.6:8000`
 
 ### Production
-- **Base URL:** `http://10.100.6.2:5002`
+- **Base URL:** `http://10.0.20.8:5002`
 - **Database:** Frigate PostgreSQL (10.0.20.6:5433) + Local MongoDB
 - **Media Server:** `http://10.0.20.6:8000`
 

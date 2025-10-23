@@ -10,7 +10,7 @@ The departure time calculation has been significantly improved to provide more a
 GET /v1/api/employees/work-hours
 ```
 
-**Base URL**: `http://10.100.6.2:5002`
+**Base URL**: `http://10.0.20.8:5002`
 
 ## Request Parameters
 
@@ -23,7 +23,7 @@ GET /v1/api/employees/work-hours
 ## Example Request
 
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ## Response Structure
@@ -255,7 +255,7 @@ const getDepartureStatus = (employee) => {
 
 ```bash
 # Test Syed Awwab (should be ~9:05 PM, not 10:02 PM)
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
 jq '.data.employees[] | select(.employee_name == "Syed Awwab") | {name, departure_time, departure_method, departure_confidence}'
 ```
 
@@ -263,7 +263,7 @@ jq '.data.employees[] | select(.employee_name == "Syed Awwab") | {name, departur
 
 ```bash
 # Test all employees with departure metadata
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
 jq '.data.employees[] | {name: .employee_name, departure: .departure_time, method: .departure_method, confidence: .departure_confidence}'
 ```
 
@@ -271,7 +271,7 @@ jq '.data.employees[] | {name: .employee_name, departure: .departure_time, metho
 
 ```bash
 # Count employees by departure confidence
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
 jq '.data.employees | group_by(.departure_confidence) | map({confidence: .[0].departure_confidence, count: length})'
 ```
 
@@ -340,4 +340,5 @@ docker logs mexell-middle-node-app-1 2>&1 | grep "Departure via"
 ## Conclusion
 
 The new departure time API provides significantly more accurate departure times with confidence tracking and method identification. The implementation is fully backward compatible while offering enhanced reliability and debugging capabilities for the frontend team.
+
 

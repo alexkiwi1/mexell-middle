@@ -59,13 +59,13 @@ const method = employee.arrival_method; // 'face_at_desk', 'person_at_desk', 'fa
 
 ```bash
 # Get work hours for specific date
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 
 # Get break time analysis
-curl "http://10.100.6.2:5002/v1/api/employees/break-time?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/break-time?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 
 # Get attendance summary
-curl "http://10.100.6.2:5002/v1/api/employees/attendance?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/attendance?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ## Response Structure

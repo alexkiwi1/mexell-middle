@@ -484,7 +484,7 @@ const getCameraSummary = async (filters) => {
 };
 
 const generateDownloadFiles = async (report, format, reportId) => {
-  const baseUrl = process.env.API_BASE_URL || 'http://10.100.6.2:5002';
+  const baseUrl = process.env.API_BASE_URL || 'http://10.0.20.8:5002';
   const reportsDir = path.join(__dirname, '../../reports');
   
   // Ensure reports directory exists
@@ -621,9 +621,9 @@ const calculateAverageProductivity = (employees) => {
 
 const generateEmployeeMediaUrls = (employee, violations) => {
   return {
-    profile_snapshot: `http://10.100.6.2:5002/media/snapshots/${employee.cameras?.[0]}/profile.jpg`,
+    profile_snapshot: `http://10.0.20.8:5002/media/snapshots/${employee.cameras?.[0]}/profile.jpg`,
     work_session_videos: employee.sessions?.map(session => 
-      `http://10.100.6.2:5002/media/recordings/${session.first_seen?.split('T')[0]}/${session.first_seen?.split('T')[1]?.split(':')[0]}/${session.cameras?.[0]}/session.mp4`
+      `http://10.0.20.8:5002/media/recordings/${session.first_seen?.split('T')[0]}/${session.first_seen?.split('T')[1]?.split(':')[0]}/${session.cameras?.[0]}/session.mp4`
     ) || [],
     violation_media: violations?.map(violation => violation.media_urls) || []
   };

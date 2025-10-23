@@ -155,3 +155,4 @@ After implementing the fix:
 - [ ] Compare departure times with video footage timestamps
 - [ ] Verify departure_method and departure_confidence are set correctly
 
+

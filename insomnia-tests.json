@@ -467,7 +467,7 @@
       "created": 1734657600000,
       "name": "Production Environment",
       "data": {
-        "base_url": "http://10.100.6.2:5002"
+        "base_url": "http://10.0.20.8:5002"
       },
       "dataPropertyOrder": {
         "&": [

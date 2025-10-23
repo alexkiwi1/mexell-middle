@@ -688,7 +688,7 @@
       "created": 1737342900000,
       "name": "Base Environment",
       "data": {
-        "base_url": "http://10.100.6.2:5002/v1",
+        "base_url": "http://10.0.20.8:5002/v1",
         "api_key": "frigate-api-key-2024",
         "start_date": "2025-10-20",
         "end_date": "2025-10-20",
@@ -725,7 +725,7 @@
       "created": 1737342900000,
       "name": "Pakistan Timezone",
       "data": {
-        "base_url": "http://10.100.6.2:5002/v1",
+        "base_url": "http://10.0.20.8:5002/v1",
         "api_key": "frigate-api-key-2024",
         "start_date": "2025-10-20",
         "end_date": "2025-10-20",
@@ -762,7 +762,7 @@
       "created": 1737342900000,
       "name": "Eastern Time",
       "data": {
-        "base_url": "http://10.100.6.2:5002/v1",
+        "base_url": "http://10.0.20.8:5002/v1",
         "api_key": "frigate-api-key-2024",
         "start_date": "2025-10-20",
         "end_date": "2025-10-20",
@@ -799,7 +799,7 @@
       "created": 1737342900000,
       "name": "UTC Timezone",
       "data": {
-        "base_url": "http://10.100.6.2:5002/v1",
+        "base_url": "http://10.0.20.8:5002/v1",
         "api_key": "frigate-api-key-2024",
         "start_date": "2025-10-20",
         "end_date": "2025-10-20",

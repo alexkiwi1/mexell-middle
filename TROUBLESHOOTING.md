@@ -5,12 +5,12 @@
 ### Quick Fix
 
 **Use the correct URL in Insomnia:**
-- **Development**: `http://10.100.6.2:5002` (NOT localhost)
-- **Production**: `http://10.100.6.2:5002`
+- **Development**: `http://10.0.20.8:5002` (NOT localhost)
+- **Production**: `http://10.0.20.8:5002`
 
 ### Why localhost doesn't work
 
-- The API is running on the server at `10.100.6.2`
+- The API is running on the server at `10.0.20.8`
 - `localhost` only works when testing from the same machine
 - You're testing from your PC, so you need the server's IP address
 
@@ -22,11 +22,11 @@
 
 **✅ Correct URLs:**
 ```
-http://10.100.6.2:5002/v1/health
-http://10.100.6.2:5002/v1/
-http://10.100.6.2:5002/v1/api/info
-http://10.100.6.2:5002/v1/api/cameras/list
-http://10.100.6.2:5002/v1/api/recent-media/recordings?limit=5
+http://10.0.20.8:5002/v1/health
+http://10.0.20.8:5002/v1/
+http://10.0.20.8:5002/v1/api/info
+http://10.0.20.8:5002/v1/api/cameras/list
+http://10.0.20.8:5002/v1/api/recent-media/recordings?limit=5
 ```
 
 **❌ Wrong URLs:**
@@ -40,7 +40,7 @@ http://127.0.0.1:5002/v1/health  ← Only works on server
 **✅ Correct URLs:**
 ```
 http://localhost:5002/v1/health
-http://10.100.6.2:5002/v1/health
+http://10.0.20.8:5002/v1/health
 ```
 
 ---
@@ -58,7 +58,7 @@ docker compose ps
 curl http://localhost:5002/v1/health
 
 # Test API externally
-curl http://10.100.6.2:5002/v1/health
+curl http://10.0.20.8:5002/v1/health
 ```
 
 ### Step 2: Check Network Connectivity
@@ -66,13 +66,13 @@ curl http://10.100.6.2:5002/v1/health
 **From your PC, test:**
 ```bash
 # Test if server is reachable
-ping 10.100.6.2
+ping 10.0.20.8
 
 # Test if port 5002 is open
-telnet 10.100.6.2 5002
+telnet 10.0.20.8 5002
 
 # Test API directly
-curl http://10.100.6.2:5002/v1/health
+curl http://10.0.20.8:5002/v1/health
 ```
 
 ### Step 3: Check Firewall
@@ -102,8 +102,8 @@ iptables -L
 ### 2. Set Correct Environment
 
 1. In Insomnia, click the environment dropdown
-2. Select "Production Environment" (uses 10.100.6.2:5002)
-3. Or manually change base_url to `http://10.100.6.2:5002`
+2. Select "Production Environment" (uses 10.0.20.8:5002)
+3. Or manually change base_url to `http://10.0.20.8:5002`
 
 ### 3. Test Connection
 
@@ -118,7 +118,7 @@ iptables -L
 ### Issue: "Couldn't connect to server"
 
 **Cause**: Using localhost instead of server IP
-**Solution**: Use `http://10.100.6.2:5002`
+**Solution**: Use `http://10.0.20.8:5002`
 
 ### Issue: "Connection refused"
 
@@ -132,7 +132,7 @@ iptables -L
 
 **Cause**: Network connectivity issues
 **Solution**:
-1. Check if you can ping 10.100.6.2
+1. Check if you can ping 10.0.20.8
 2. Check if port 5002 is accessible
 3. Check network routing
 
@@ -150,7 +150,7 @@ iptables -L
 
 ### Current Setup
 
-- **Server IP**: 10.100.6.2
+- **Server IP**: 10.0.20.8
 - **API Port**: 5002
 - **Database**: 10.0.20.6:5433
 - **Video Server**: 10.0.20.6:8000
@@ -162,7 +162,7 @@ ports:
   - '5002:5002'  # Maps host port 5002 to container port 5002
 ```
 
-This makes the API accessible on `10.100.6.2:5002`
+This makes the API accessible on `10.0.20.8:5002`
 
 ---
 
@@ -178,17 +178,17 @@ docker compose ps
 curl http://localhost:5002/v1/health
 
 # Test external connection
-curl http://10.100.6.2:5002/v1/health
+curl http://10.0.20.8:5002/v1/health
 ```
 
 ### 2. Client Side (Run these from your PC)
 
 ```bash
 # Test server reachability
-ping 10.100.6.2
+ping 10.0.20.8
 
 # Test API connection
-curl http://10.100.6.2:5002/v1/health
+curl http://10.0.20.8:5002/v1/health
 ```
 
 ### 3. Insomnia Testing
@@ -228,7 +228,7 @@ curl http://10.100.6.2:5002/v1/health
 If you're still having issues:
 
 1. **Check server logs**: `docker compose logs node-app`
-2. **Verify network**: Can you ping 10.100.6.2 from your PC?
+2. **Verify network**: Can you ping 10.0.20.8 from your PC?
 3. **Test with curl**: Try the curl commands above
 4. **Check firewall**: Make sure port 5002 is open
 

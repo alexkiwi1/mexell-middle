@@ -3,7 +3,7 @@
 # Frigate Middleware API - Phase 1 Test Script
 # Run this script to test all Phase 1 endpoints
 
-BASE_URL="http://10.100.6.2:5002"
+BASE_URL="http://10.0.20.8:5002"
 echo "🧪 Testing Frigate Middleware API - Phase 1"
 echo "Base URL: $BASE_URL"
 echo "=========================================="

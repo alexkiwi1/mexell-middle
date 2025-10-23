@@ -218,3 +218,4 @@ To improve video URL coverage (currently 73%):
 
 The fix is working as expected for the majority of employees. The 27% missing video URLs is due to missing events in the Frigate database, not a code issue.
 
+

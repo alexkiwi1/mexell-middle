@@ -46,3 +46,4 @@ const DeskAssignment = mongoose.model('DeskAssignment', deskAssignmentSchema);
 
 module.exports = DeskAssignment;
 
+

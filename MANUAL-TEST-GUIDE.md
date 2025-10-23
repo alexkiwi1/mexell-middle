@@ -4,14 +4,14 @@
 
 Since Insomnia test scripts aren't working, here's a manual testing guide to verify all endpoints.
 
-### **Base URL**: `http://10.100.6.2:5002`
+### **Base URL**: `http://10.0.20.8:5002`
 
 ---
 
 ## ✅ Phase 1: Foundation & Media Tests
 
 ### 1.1 Health Check
-**URL**: `GET http://10.100.6.2:5002/v1/health`
+**URL**: `GET http://10.0.20.8:5002/v1/health`
 
 **Expected Response**:
 ```json
@@ -33,7 +33,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 1.2 Root Endpoint
-**URL**: `GET http://10.100.6.2:5002/v1/`
+**URL**: `GET http://10.0.20.8:5002/v1/`
 
 **Expected Response**:
 ```json
@@ -53,7 +53,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 1.3 API Info
-**URL**: `GET http://10.100.6.2:5002/v1/api/info`
+**URL**: `GET http://10.0.20.8:5002/v1/api/info`
 
 **Expected Response**:
 ```json
@@ -79,7 +79,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 1.4 Cameras List
-**URL**: `GET http://10.100.6.2:5002/v1/api/cameras/list`
+**URL**: `GET http://10.0.20.8:5002/v1/api/cameras/list`
 
 **Expected Response**:
 ```json
@@ -98,7 +98,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 1.5 Recent Recordings
-**URL**: `GET http://10.100.6.2:5002/v1/api/recent-media/recordings?limit=3`
+**URL**: `GET http://10.0.20.8:5002/v1/api/recent-media/recordings?limit=3`
 
 **Expected Response**:
 ```json
@@ -124,7 +124,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 1.6 Recent Clips
-**URL**: `GET http://10.100.6.2:5002/v1/api/recent-media/clips?limit=3`
+**URL**: `GET http://10.0.20.8:5002/v1/api/recent-media/clips?limit=3`
 
 **Expected Response**:
 ```json
@@ -151,7 +151,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ## ✅ Phase 2: Camera Monitoring Tests
 
 ### 2.1 Camera Summary (All)
-**URL**: `GET http://10.100.6.2:5002/v1/api/cameras/summary?hours=24`
+**URL**: `GET http://10.0.20.8:5002/v1/api/cameras/summary?hours=24`
 
 **Expected Response**:
 ```json
@@ -181,7 +181,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 2.2 Camera Summary (Specific)
-**URL**: `GET http://10.100.6.2:5002/v1/api/cameras/employees_01/summary?hours=24`
+**URL**: `GET http://10.0.20.8:5002/v1/api/cameras/employees_01/summary?hours=24`
 
 **Expected Response**:
 ```json
@@ -214,7 +214,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 2.3 Camera Activity
-**URL**: `GET http://10.100.6.2:5002/v1/api/cameras/employees_01/activity?hours=1&limit=5`
+**URL**: `GET http://10.0.20.8:5002/v1/api/cameras/employees_01/activity?hours=1&limit=5`
 
 **Expected Response**:
 ```json
@@ -238,7 +238,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 2.4 Camera Status
-**URL**: `GET http://10.100.6.2:5002/v1/api/cameras/employees_01/status`
+**URL**: `GET http://10.0.20.8:5002/v1/api/cameras/employees_01/status`
 
 **Expected Response**:
 ```json
@@ -266,7 +266,7 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ---
 
 ### 2.5 Camera Violations
-**URL**: `GET http://10.100.6.2:5002/v1/api/cameras/employees_01/violations?hours=24&limit=5`
+**URL**: `GET http://10.0.20.8:5002/v1/api/cameras/employees_01/violations?hours=24&limit=5`
 
 **Expected Response**:
 ```json
@@ -294,19 +294,19 @@ Since Insomnia test scripts aren't working, here's a manual testing guide to ver
 ### Using curl (from command line):
 ```bash
 # Test health
-curl "http://10.100.6.2:5002/v1/health"
+curl "http://10.0.20.8:5002/v1/health"
 
 # Test cameras
-curl "http://10.100.6.2:5002/v1/api/cameras/list"
+curl "http://10.0.20.8:5002/v1/api/cameras/list"
 
 # Test recordings
-curl "http://10.100.6.2:5002/v1/api/recent-media/recordings?limit=3"
+curl "http://10.0.20.8:5002/v1/api/recent-media/recordings?limit=3"
 
 # Test camera summary
-curl "http://10.100.6.2:5002/v1/api/cameras/summary?hours=24"
+curl "http://10.0.20.8:5002/v1/api/cameras/summary?hours=24"
 
 # Test specific camera
-curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/status"
+curl "http://10.0.20.8:5002/v1/api/cameras/employees_01/status"
 ```
 
 ### Using Insomnia (without test scripts):
@@ -327,7 +327,7 @@ curl "http://10.100.6.2:5002/v1/api/cameras/employees_01/status"
 - ✅ Valid JSON: No parsing errors
 
 **If any endpoint fails**:
-- ❌ Check server is running: `curl http://10.100.6.2:5002/v1/health`
+- ❌ Check server is running: `curl http://10.0.20.8:5002/v1/health`
 - ❌ Check database connection in health response
 - ❌ Check URL format and parameters
 - ❌ Check server logs for errors

@@ -7,7 +7,7 @@
 2. Open Insomnia
 3. Click "Import" → "From File"
 4. Select the downloaded file
-5. Switch to "Development Environment" (localhost:5002) or "Production Environment" (10.100.6.2:5002)
+5. Switch to "Development Environment" (localhost:5002) or "Production Environment" (10.0.20.8:5002)
 
 ---
 
@@ -101,7 +101,7 @@
 - **Video Server**: http://10.0.20.6:8000
 
 ### Production Testing
-- **Base URL**: `http://10.100.6.2:5002`
+- **Base URL**: `http://10.0.20.8:5002`
 - **Database**: 10.0.20.6:5433
 - **Video Server**: http://10.0.20.6:8000
 

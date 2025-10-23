@@ -71,7 +71,7 @@ Each API endpoint has its own markdown file with:
 ## Base URL
 
 - **Development**: `http://localhost:5002`
-- **Production**: `http://10.100.6.2:5002`
+- **Production**: `http://10.0.20.8:5002`
 
 ## Authentication
 

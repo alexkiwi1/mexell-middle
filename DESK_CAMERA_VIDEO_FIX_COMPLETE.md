@@ -210,3 +210,4 @@ docker restart mexell-middle-node-app-1
 - **Compliance**: Videos show only relevant footage
 
 **This fix ensures that arrival and departure videos show ONLY footage from the employee's assigned desk camera!** 🎉
+

@@ -4,13 +4,13 @@
 
 ## Changes Made
 
-Updated API documentation and configuration files to use the correct server IP address `10.100.6.2` instead of `localhost`.
+Updated API documentation and configuration files to use the correct server IP address `10.0.20.8` instead of `localhost`.
 
 ## Files Updated
 
 ### 1. Frontend Documentation
 - **`FRONTEND_API_RESPONSE_STRUCTURE.md`** ✅
-  - Updated Base URL: `http://10.100.6.2:5002/v1/api/employees/`
+  - Updated Base URL: `http://10.0.20.8:5002/v1/api/employees/`
   - Updated all example API calls
 
 - **`FRONTEND_QUICK_REFERENCE.md`** ✅
@@ -23,7 +23,7 @@ Updated API documentation and configuration files to use the correct server IP a
 
 ### 3. Test Scripts
 - **`test-script.sh`** ✅
-  - Updated BASE_URL to `http://10.100.6.2:5002`
+  - Updated BASE_URL to `http://10.0.20.8:5002`
 
 ## Updated API Endpoints
 
@@ -32,19 +32,19 @@ All API endpoints now use the correct IP address:
 ### Employee APIs
 ```bash
 # Work Hours API
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 
 # Break Time API
-curl "http://10.100.6.2:5002/v1/api/employees/break-time?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/break-time?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 
 # Attendance API
-curl "http://10.100.6.2:5002/v1/api/employees/attendance?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/attendance?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ### Media APIs
 ```bash
 # Recording Timestamp API
-curl "http://10.100.6.2:5002/v1/api/recordings/at-time?camera=employees_01&timestamp=1761043055.341651&window=2"
+curl "http://10.0.20.8:5002/v1/api/recordings/at-time?camera=employees_01&timestamp=1761043055.341651&window=2"
 ```
 
 ## Files Not Updated (Development References)
@@ -63,7 +63,7 @@ These files are kept with localhost references as they are used for local develo
 
 The frontend team should now use:
 
-**Base URL**: `http://10.100.6.2:5002`
+**Base URL**: `http://10.0.20.8:5002`
 
 **All API calls should use this IP address for production access.**
 
@@ -73,10 +73,10 @@ To verify the IP address is working:
 
 ```bash
 # Test health endpoint
-curl "http://10.100.6.2:5002/v1/health"
+curl "http://10.0.20.8:5002/v1/health"
 
 # Test work hours API
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ## Benefits
@@ -85,4 +85,5 @@ curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&e
 2. **Frontend Compatible**: Frontend team can use the provided examples directly
 3. **Consistent**: All API examples use the same IP address
 4. **Clear Separation**: Development files still use localhost for local testing
+
 

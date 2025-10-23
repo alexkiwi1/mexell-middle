@@ -155,3 +155,4 @@ All employee-related APIs now include all employees:
 4. Implement attendance reporting for HR
 5. Add employee absence reason tracking (if needed)
 
+

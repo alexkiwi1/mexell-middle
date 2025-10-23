@@ -9,7 +9,7 @@ This document provides detailed API response structures for all employee-related
 ## Base URL
 
 ```
-http://10.100.6.2:5002/v1/api/employees/
+http://10.0.20.8:5002/v1/api/employees/
 ```
 
 ## 1. Work Hours API
@@ -305,17 +305,17 @@ type AttendanceStatus =
 
 ### Get Work Hours for October 20, 2025
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ### Get Break Time Analysis
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/break-time?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/break-time?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ### Get Attendance Summary
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/attendance?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/attendance?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ## Frontend Integration Notes

@@ -7,10 +7,10 @@ The Employee Tracking API provides comprehensive employee monitoring capabilitie
 ## Server Information
 
 **Server Details:**
-- **Primary IP:** `10.100.6.2`
+- **Primary IP:** `10.0.20.8`
 - **Public IP:** `222.155.243.10`
 - **Port:** `5002` (Docker container)
-- **Base URL:** `http://10.100.6.2:5002`
+- **Base URL:** `http://10.0.20.8:5002`
 
 **Container Status:**
 - ✅ **Node.js App:** Running (mexell-middle-node-app-1)
@@ -21,7 +21,7 @@ The Employee Tracking API provides comprehensive employee monitoring capabilitie
 ## Base Configuration
 
 ```javascript
-const API_BASE = "http://10.100.6.2:5002/v1/api";
+const API_BASE = "http://10.0.20.8:5002/v1/api";
 const DEFAULT_TIMEZONE = "Asia/Karachi"; // PKT timezone
 ```
 
@@ -90,7 +90,7 @@ const DEFAULT_TIMEZONE = "Asia/Karachi"; // PKT timezone
 
 **Example Request:**
 ```bash
-GET http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2024-10-20&end_date=2024-10-20&timezone=Asia/Karachi&employee_name=John%20Doe
+GET http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2024-10-20&end_date=2024-10-20&timezone=Asia/Karachi&employee_name=John%20Doe
 ```
 
 **Response:**
@@ -147,7 +147,7 @@ GET http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2024-10-20&end
 
 **Example Request:**
 ```bash
-GET http://10.100.6.2:5002/v1/api/employees/break-time?start_date=2024-10-20&end_date=2024-10-20&timezone=Asia/Karachi
+GET http://10.0.20.8:5002/v1/api/employees/break-time?start_date=2024-10-20&end_date=2024-10-20&timezone=Asia/Karachi
 ```
 
 **Response:**
@@ -253,7 +253,7 @@ GET http://10.100.6.2:5002/v1/api/employees/break-time?start_date=2024-10-20&end
 ```javascript
 // config/api.js
 const API_CONFIG = {
-  baseURL: 'http://10.100.6.2:5002/v1/api',
+  baseURL: 'http://10.0.20.8:5002/v1/api',
   defaultTimezone: 'Asia/Karachi', // PKT timezone
   timeout: 30000
 };
@@ -369,7 +369,7 @@ export default EmployeeDashboard;
 // services/employeeService.js
 import axios from 'axios';
 
-const API_BASE = 'http://10.100.6.2:5002/v1/api';
+const API_BASE = 'http://10.0.20.8:5002/v1/api';
 
 export const getEmployeeWorkHours = async (params) => {
   const response = await axios.get(`${API_BASE}/employees/work-hours`, {
@@ -554,23 +554,23 @@ export const handleAPIError = (error) => {
 
 ```bash
 # Test health endpoint
-curl -X GET "http://10.100.6.2:5002/v1/health"
+curl -X GET "http://10.0.20.8:5002/v1/health"
 ```
 
 ### 2. Test Employee Work Hours
 
 ```bash
 # Test with PKT timezone
-curl -X GET "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2024-10-20&end_date=2024-10-20&timezone=Asia/Karachi"
+curl -X GET "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2024-10-20&end_date=2024-10-20&timezone=Asia/Karachi"
 
 # Test with UTC timezone
-curl -X GET "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2024-10-20&end_date=2024-10-20&timezone=UTC"
+curl -X GET "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2024-10-20&end_date=2024-10-20&timezone=UTC"
 ```
 
 ### 3. Test Break Time Analysis
 
 ```bash
-curl -X GET "http://10.100.6.2:5002/v1/api/employees/break-time?start_date=2024-10-20&end_date=2024-10-20&timezone=Asia/Karachi&employee_name=John%20Doe"
+curl -X GET "http://10.0.20.8:5002/v1/api/employees/break-time?start_date=2024-10-20&end_date=2024-10-20&timezone=Asia/Karachi&employee_name=John%20Doe"
 ```
 
 ## Performance Considerations

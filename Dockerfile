@@ -6,7 +6,7 @@ WORKDIR /usr/src/node-app
 
 COPY package.json ./
 
-RUN yarn install && chown -R node:node /usr/src/node-app
+RUN npm install && chown -R node:node /usr/src/node-app
 
 COPY --chown=node:node . .
 

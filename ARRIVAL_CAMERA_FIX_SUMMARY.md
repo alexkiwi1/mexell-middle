@@ -117,3 +117,4 @@ Tested multiple employees and all show correct arrival times and cameras:
 
 The arrival detection now correctly validates BOTH the assigned desk zone AND the camera that covers that zone. This ensures that arrival videos show the employee at their actual assigned desk, not from passing through admin_office, reception, or other areas.
 
+

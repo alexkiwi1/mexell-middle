@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-API_BASE="http://10.100.6.2:5002/v1"
+API_BASE="http://10.0.20.8:5002/v1"
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0

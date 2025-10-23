@@ -212,3 +212,4 @@ The office time calculation now accurately reflects actual desk occupancy using 
 - ✅ All field names preserved
 - ✅ Backward compatible
 
+

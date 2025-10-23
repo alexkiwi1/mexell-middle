@@ -18,7 +18,7 @@ const swaggerDef = {
   },
   servers: [
     {
-      url: `http://10.100.6.2:5002/v1`,
+      url: `http://10.0.20.8:5002/v1`,
       description: 'Production Server'
     },
     {

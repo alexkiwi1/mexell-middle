@@ -213,3 +213,4 @@ This document contains the complete Frigate configuration with all zone coordina
 
 This configuration provides comprehensive desk zone mapping for accurate employee tracking and attendance monitoring.
 
+

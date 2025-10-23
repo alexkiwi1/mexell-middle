@@ -3,7 +3,7 @@
 ## API Endpoint
 
 ```
-GET http://10.100.6.2:5002/v1/api/violations/summary
+GET http://10.0.20.8:5002/v1/api/violations/summary
 ```
 
 ## Request Parameters
@@ -249,16 +249,16 @@ GET /v1/api/violations/summary?start_date=2025-10-20&end_date=2025-10-21&timezon
 ### Test with curl
 ```bash
 # Get today's violations
-curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21"
+curl "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21"
 
 # Get violations with pretty JSON
-curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '.'
+curl "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '.'
 
 # Count total violations
-curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '[.data.employees[].totalViolations] | add'
+curl "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '[.data.employees[].totalViolations] | add'
 
 # Get employee with most violations
-curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '.data.employees[0] | {name: .employeeName, count: .totalViolations}'
+curl "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21" | jq '.data.employees[0] | {name: .employeeName, count: .totalViolations}'
 ```
 
 ### Test Thumbnail URLs
@@ -307,4 +307,5 @@ curl -I "http://10.0.20.6:8000/clips/review/thumb-meeting_room-1761035213.941356
 **API Version**: 1.0  
 **Last Updated**: October 21, 2025  
 **Documentation Maintained By**: Frigate Middleware Team
+
 

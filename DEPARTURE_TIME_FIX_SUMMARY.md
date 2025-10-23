@@ -183,3 +183,4 @@ All the following APIs automatically use the new departure logic:
 
 The departure time calculation is now significantly more accurate, filtering out spurious late-night detections and providing reliable departure times with confidence tracking. This fix improves work hour calculations and provides better insights into employee attendance patterns.
 
+

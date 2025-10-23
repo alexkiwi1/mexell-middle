@@ -1325,7 +1325,7 @@
       "created": 1734675900000,
       "name": "Frigate Middleware Environment",
       "data": {
-        "base_url": "http://10.100.6.2:5002",
+        "base_url": "http://10.0.20.8:5002",
         "employee_name": "Muhammad Arsalan",
         "camera_name": "employees_01",
         "start_date": "2025-10-20",

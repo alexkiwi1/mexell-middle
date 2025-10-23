@@ -325,9 +325,9 @@ const getMobileSettings = async () => {
       max_notifications: 50
     },
     endpoints: {
-      websocket: 'ws://10.100.6.2:5002/socket.io/',
-      media_proxy: 'http://10.100.6.2:5002/media/',
-      api_base: 'http://10.100.6.2:5002/v1'
+      websocket: 'ws://10.0.20.8:5002/socket.io/',
+      media_proxy: 'http://10.0.20.8:5002/media/',
+      api_base: 'http://10.0.20.8:5002/v1'
     }
   };
 };

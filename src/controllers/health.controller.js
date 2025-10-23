@@ -80,7 +80,7 @@ const root = async (req, res, next) => {
         },
         servers: [
           {
-            url: 'http://10.0.20.7:5002',
+            url: 'http://10.0.20.8:5002',
             description: 'Production Server'
           },
           {

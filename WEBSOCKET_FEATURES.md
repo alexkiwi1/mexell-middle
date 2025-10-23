@@ -6,17 +6,17 @@ The Frigate Middleware API now includes comprehensive WebSocket support for real
 ## 🌐 Access Points
 
 ### WebSocket Server
-- **URL**: `ws://10.100.6.2:5002/socket.io/`
+- **URL**: `ws://10.0.20.8:5002/socket.io/`
 - **Protocol**: Socket.IO v4
 - **Transport**: WebSocket with polling fallback
 
 ### WebSocket Test Client
-- **URL**: http://10.100.6.2:5002/websocket-test.html
+- **URL**: http://10.0.20.8:5002/websocket-test.html
 - **Features**: Interactive testing interface, real-time event visualization, subscription management
 
 ### API Documentation
-- **Swagger UI**: http://10.100.6.2:5002/v1/docs/
-- **JSON Spec**: http://10.100.6.2:5002/v1/docs/swagger.json
+- **Swagger UI**: http://10.0.20.8:5002/v1/docs/
+- **JSON Spec**: http://10.0.20.8:5002/v1/docs/swagger.json
 
 ## 📡 Real-time Event Types
 
@@ -173,7 +173,7 @@ Broadcast custom event to all clients.
 ### JavaScript Client Example
 ```javascript
 // Connect to WebSocket server
-const socket = io('http://10.100.6.2:5002', {
+const socket = io('http://10.0.20.8:5002', {
   path: '/socket.io'
 });
 
@@ -236,7 +236,7 @@ def custom_event(data):
     print('Custom event:', data)
 
 # Connect to server
-sio.connect('http://10.100.6.2:5002')
+sio.connect('http://10.0.20.8:5002')
 sio.wait()
 ```
 
@@ -317,13 +317,13 @@ DB_PASSWORD=frigate_secure_pass_2024
 ./test-websocket-apis.sh
 
 # Test specific endpoints
-curl http://10.100.6.2:5002/v1/api/websocket/stats
-curl http://10.100.6.2:5002/v1/api/websocket/activity?hours=1
-curl -X POST http://10.100.6.2:5002/v1/api/websocket/test
+curl http://10.0.20.8:5002/v1/api/websocket/stats
+curl http://10.0.20.8:5002/v1/api/websocket/activity?hours=1
+curl -X POST http://10.0.20.8:5002/v1/api/websocket/test
 ```
 
 ### Manual Testing
-1. Open WebSocket test client: http://10.100.6.2:5002/websocket-test.html
+1. Open WebSocket test client: http://10.0.20.8:5002/websocket-test.html
 2. Click "Connect" to establish WebSocket connection
 3. Subscribe to different event types
 4. Monitor real-time events in the log
@@ -369,10 +369,10 @@ curl -X POST http://10.100.6.2:5002/v1/api/websocket/test
 ### Debug Commands
 ```bash
 # Check WebSocket server status
-curl http://10.100.6.2:5002/v1/api/websocket/stats
+curl http://10.0.20.8:5002/v1/api/websocket/stats
 
 # Test WebSocket connectivity
-curl "http://10.100.6.2:5002/socket.io/?EIO=4&transport=polling"
+curl "http://10.0.20.8:5002/socket.io/?EIO=4&transport=polling"
 
 # Monitor container logs
 docker logs mexell-middle-node-app-1 -f
@@ -382,8 +382,8 @@ docker logs mexell-middle-node-app-1 -f
 
 For technical support or feature requests:
 - **GitHub Issues**: https://github.com/alexkiwi1/mexell-middle/issues
-- **Documentation**: http://10.100.6.2:5002/v1/docs/
-- **Test Client**: http://10.100.6.2:5002/websocket-test.html
+- **Documentation**: http://10.0.20.8:5002/v1/docs/
+- **Test Client**: http://10.0.20.8:5002/websocket-test.html
 
 ---
 

@@ -7,7 +7,7 @@ This Insomnia collection provides comprehensive testing for the Frigate Middlewa
 ## 📋 Collection Overview
 
 ### **Environment Variables**
-- `base_url`: `http://10.100.6.2:5002`
+- `base_url`: `http://10.0.20.8:5002`
 - `employee_name`: `Muhammad Arsalan` (example employee)
 - `camera_name`: `employees_01` (example camera)
 - `start_date`: `2025-10-20` (example start date)
@@ -121,7 +121,7 @@ Select: insomnia-complete-collection.json
 
 ### 2. **Set Environment**
 - Select "Frigate Middleware Environment"
-- Verify `base_url` is set to `http://10.100.6.2:5002`
+- Verify `base_url` is set to `http://10.0.20.8:5002`
 - Update other variables as needed
 
 ### 3. **Run Tests**
@@ -171,7 +171,7 @@ Select: insomnia-complete-collection.json
 
 📊 Test Report Summary
 =====================
-🔗 URL: http://10.100.6.2:5002/v1/api/mobile/settings
+🔗 URL: http://10.0.20.8:5002/v1/api/mobile/settings
 📊 Status: 200
 ⏱️ Response Time: 245ms
 📅 Test Time: 2025-10-20T04:25:00.000Z
@@ -185,7 +185,7 @@ Select: insomnia-complete-collection.json
 
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
-| `base_url` | API base URL | `http://10.100.6.2:5002` |
+| `base_url` | API base URL | `http://10.0.20.8:5002` |
 | `employee_name` | Example employee name | `Muhammad Arsalan` |
 | `camera_name` | Example camera name | `employees_01` |
 | `start_date` | Start date for queries | `2025-10-20` |
@@ -239,7 +239,7 @@ Most requests support these common parameters:
 ### **Common Issues**
 
 1. **Connection Refused**
-   - Check if server is running on `10.100.6.2:5002`
+   - Check if server is running on `10.0.20.8:5002`
    - Verify network connectivity
 
 2. **Database Timeout**
@@ -281,16 +281,16 @@ Most requests support these common parameters:
 ## 📚 Additional Resources
 
 ### **API Documentation**
-- **Swagger UI**: `http://10.100.6.2:5002/v1/docs`
-- **Swagger JSON**: `http://10.100.6.2:5002/v1/docs/swagger.json`
+- **Swagger UI**: `http://10.0.20.8:5002/v1/docs`
+- **Swagger JSON**: `http://10.0.20.8:5002/v1/docs/swagger.json`
 
 ### **WebSocket Testing**
-- **Test Client**: `http://10.100.6.2:5002/websocket-test.html`
-- **WebSocket URL**: `ws://10.100.6.2:5002/socket.io/`
+- **Test Client**: `http://10.0.20.8:5002/websocket-test.html`
+- **WebSocket URL**: `ws://10.0.20.8:5002/socket.io/`
 
 ### **Media Access**
-- **Recordings**: `http://10.100.6.2:5002/v1/media/recordings/`
-- **Clips**: `http://10.100.6.2:5002/v1/media/clips/`
+- **Recordings**: `http://10.0.20.8:5002/v1/media/recordings/`
+- **Clips**: `http://10.0.20.8:5002/v1/media/clips/`
 
 ## 🎯 Best Practices
 

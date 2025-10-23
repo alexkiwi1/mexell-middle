@@ -39,7 +39,7 @@ curl "http://localhost:5002/v1/"
     },
     "servers": [
       {
-        "url": "http://10.100.6.2:5002",
+        "url": "http://10.0.20.8:5002",
         "description": "Production Server"
       },
       {

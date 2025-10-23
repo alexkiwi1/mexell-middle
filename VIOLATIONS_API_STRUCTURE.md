@@ -7,7 +7,7 @@ The Violations API provides comprehensive access to cell phone violation data wi
 ## Base URL
 
 ```
-http://10.100.6.2:5002/v1
+http://10.0.20.8:5002/v1
 ```
 
 ## Authentication
@@ -30,7 +30,7 @@ No authentication required (internal network only).
 
 **Example Request:**
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21&limit=10"
+curl "http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21&limit=10"
 ```
 
 **Response Structure:**
@@ -110,7 +110,7 @@ curl "http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end
 
 **Example Request:**
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/employee/Muhammad%20Roshan?hours=24&limit=5"
+curl "http://10.0.20.8:5002/v1/api/violations/employee/Muhammad%20Roshan?hours=24&limit=5"
 ```
 
 **Response Structure:**
@@ -180,7 +180,7 @@ curl "http://10.100.6.2:5002/v1/api/violations/employee/Muhammad%20Roshan?hours=
 
 **Example Request:**
 ```bash
-curl "http://10.100.6.2:5002/v1/api/cameras/admin_office/violations?hours=24&limit=5"
+curl "http://10.0.20.8:5002/v1/api/cameras/admin_office/violations?hours=24&limit=5"
 ```
 
 **Response Structure:**
@@ -248,7 +248,7 @@ curl "http://10.100.6.2:5002/v1/api/cameras/admin_office/violations?hours=24&lim
 
 **Example Request:**
 ```bash
-curl "http://10.100.6.2:5002/v1/api/violations/media/1761038610.925424-s0u2d8/admin_office/1761038610.925424"
+curl "http://10.0.20.8:5002/v1/api/violations/media/1761038610.925424-s0u2d8/admin_office/1761038610.925424"
 ```
 
 **Response Structure:**
@@ -368,7 +368,7 @@ curl "http://10.100.6.2:5002/v1/api/violations/media/1761038610.925424-s0u2d8/ad
 ```javascript
 // Fetch violations for today
 const fetchViolations = async () => {
-  const response = await fetch('http://10.100.6.2:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21');
+  const response = await fetch('http://10.0.20.8:5002/v1/api/violations/summary?start_date=2025-10-21&end_date=2025-10-21');
   const data = await response.json();
   
   if (data.success) {
@@ -406,7 +406,7 @@ import requests
 import json
 
 def get_violations_summary(start_date, end_date, limit=50):
-    url = "http://10.100.6.2:5002/v1/api/violations/summary"
+    url = "http://10.0.20.8:5002/v1/api/violations/summary"
     params = {
         "start_date": start_date,
         "end_date": end_date,
@@ -463,5 +463,6 @@ For technical support or questions about the API, contact the development team.
 
 **Last Updated**: October 21, 2025  
 **API Version**: 2.0.0  
-**Base URL**: http://10.100.6.2:5002/v1
+**Base URL**: http://10.0.20.8:5002/v1
+
 

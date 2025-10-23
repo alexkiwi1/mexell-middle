@@ -10,7 +10,7 @@ The employee tracking API has been significantly enhanced with improved departur
 GET /v1/api/employees/work-hours
 ```
 
-**Base URL**: `http://10.100.6.2:5002`
+**Base URL**: `http://10.0.20.8:5002`
 
 ## Request Parameters
 
@@ -23,7 +23,7 @@ GET /v1/api/employees/work-hours
 ## Example Request
 
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi"
 ```
 
 ## Complete Response Structure
@@ -461,25 +461,25 @@ const formatDetectionMethod = (method, confidence) => {
 
 ### Test Present Employee
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
 jq '.data.employees[] | select(.employee_name == "Syed Awwab")'
 ```
 
 ### Test Absent Employee
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
 jq '.data.employees[] | select(.arrival_time == "no arrival")'
 ```
 
 ### Test Filtered Employees
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
 jq '.data.employees[] | select(.false_positive_reason != null)'
 ```
 
 ### Test Confidence Distribution
 ```bash
-curl "http://10.100.6.2:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
+curl "http://10.0.20.8:5002/v1/api/employees/work-hours?start_date=2025-10-20&end_date=2025-10-20&timezone=Asia/Karachi" | \
 jq '.data.employees | group_by(.arrival_confidence) | map({confidence: .[0].arrival_confidence, count: length})'
 ```
 
