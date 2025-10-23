@@ -344,3 +344,4 @@
 ---
 
 *These architecture diagrams provide a comprehensive visual representation of the Frigate Middleware API system, showing the relationships between components, data flow, security layers, and deployment architecture.*
+
